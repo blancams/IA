@@ -100,3 +100,25 @@
 ;;; NO ESTÁ TERMINADO
 (defun sc-conf (x vs conf)
    (remove conf (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs) :test #'> :key #'car))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Finds a root of f between the points a and b using bisection.
+;;
+;; If f(a)f(b)>0 there is no guarantee that there will be a root in the
+;; interval, and the function will return NIL.
+;;
+;; f: function of a single real parameter with real values whose root
+;; we want to find
+;; a: lower extremum of the interval in which we search for the root
+;; b: b>a upper extremum of the interval in which we search for the root
+;; tol: tolerance for the stopping criterion: if b-a < tol the function
+;; returns (a+b)/2 as a solution.
+;;
+(defun bisect (f a b tol)
+   (let ((pto-medio (/ (+ a b) 2)))
+   (cond    ((= (funcall f pto-medio) 0) pto-medio)
+         ((> (* (funcall f a) (funcall f b)) 0) NIL)
+         ((< (- b a) tol) pto-medio)
+         ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b (/ tol 2)))
+         (t (bisect f a pto-medio (/ tol 2))))))
