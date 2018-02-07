@@ -88,11 +88,6 @@
 
 ;;; EJERCICIO 1.2
 
-<<<<<<< HEAD
-
-
-
-=======
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf (x vs conf)
 ;;; Devuelve aquellos vectores similares a una categoria
@@ -105,7 +100,8 @@
 ;;; NO ESTÁ TERMINADO
 (defun sc-conf (x vs conf)
    (remove conf (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs) :test #'> :key #'car))
->>>>>>> 9dfa51f6e25328abe74dbf0f610c09dce5ae4c30
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -123,19 +119,18 @@
 ;;
 (defun bisect (f a b tol)
    (let ((pto-medio (/ (+ a b) 2)))
-   (cond    ((= (funcall f pto-medio) 0) pto-medio)
+   (cond ((= (funcall f pto-medio) 0) pto-medio)
          ((> (* (funcall f a) (funcall f b)) 0) NIL)
          ((< (- b a) tol) pto-medio)
-<<<<<<< HEAD
          ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol)) 
          (t (bisect f a pto-medio tol)))))
 
 
 
 (defun allroot-aux (f lst tol ret)
-   (cond ((and (null (rest lst)) (not (null (first lst)))) ret)
-        (t (append ret (bisect f (first lst) (second lst) tol))
-        (allroot-aux f (rest lst) tol ret))))
+   (if (and (null (rest lst)) (not (null (first lst)))) 
+      ret
+      (allroot-aux f (rest lst) tol (append ret (list (bisect f (first lst) (second lst) tol))))))
 
 ;;
 ;; Finds all the roots that are located between consecutive values of a list
@@ -161,9 +156,6 @@
 ;;(allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75 1.25 1.75 2.25) 0.0001)
 ;; Para ver si tiene solo un elemento: 
 ;; (and (null (rest lst)) (not (null (first lst))))
-;;(allroot #'(lambda(x) (sin (* 6.26 x))) '(0.25 0.75) 0.001)
-;;(bisect #'(lambda(x) (sin (* 6.28 x))) 1.1 2.1 0.001)
-=======
-         ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b (/ tol 2)))
-         (t (bisect f a pto-medio (/ tol 2))))))
->>>>>>> 9dfa51f6e25328abe74dbf0f610c09dce5ae4c30
+;;(allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75) 0.001)
+;;(bisect #'(lambda(x) (sin (* 6.28 x))) 0.25 0.75 0.001)
+
