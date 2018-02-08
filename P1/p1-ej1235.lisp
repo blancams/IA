@@ -11,7 +11,7 @@
 (defun check-list (x)
    (if (null x)
       t
-      (and (list x) (check-list (rest x)))))
+      (and (listp x) (check-list (rest x)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; check-pos (x)
@@ -88,6 +88,24 @@
 
 ;;; EJERCICIO 1.2
 
+(defun sc-conf-gendict (x vs)
+   (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs))
+
+(defun sc-conf-auxsort (x lst)
+   (if (null lst)
+      (list x)
+      (if (> (car x) (car (car lst)))
+          (cons x lst)
+          (cons (car lst) (sc-conf-auxsort x (cdr lst))))))
+
+(defun sc-conf-sortdict (lst)
+   (if (null lst)
+      lst
+      (sc-conf-auxsort (car lst) (sc-conf-sortdict (cdr lst)))))
+
+(defun sc-conf-selvec (lst)
+   (mapcar #'(lambda (y) (car (cdr y))) lst))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf (x vs conf)
 ;;; Devuelve aquellos vectores similares a una categoria
@@ -99,7 +117,7 @@
 ;;;
 ;;; NO ESTÁ TERMINADO
 (defun sc-conf (x vs conf)
-   (remove conf (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs) :test #'> :key #'car))
+   (sc-conf-selvec (sc-conf-sortdict (remove conf (sc-conf-gendict x vs) :test #'> :key #'car))))
 
 
 
@@ -122,13 +140,13 @@
    (cond ((= (funcall f pto-medio) 0) pto-medio)
          ((> (* (funcall f a) (funcall f b)) 0) NIL)
          ((< (- b a) tol) pto-medio)
-         ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol)) 
+         ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol))
          (t (bisect f a pto-medio tol)))))
 
 
 
 (defun allroot-aux (f lst tol ret)
-   (if (and (null (rest lst)) (not (null (first lst)))) 
+   (if (and (null (rest lst)) (not (null (first lst))))
       ret
       (allroot-aux f (rest lst) tol (append ret (list (bisect f (first lst) (second lst) tol))))))
 
@@ -161,5 +179,3 @@
 
 (defun allind (f a b N tol)
    (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
-
-
