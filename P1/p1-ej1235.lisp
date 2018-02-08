@@ -264,7 +264,6 @@
 
 (defun allind (f a b N tol)
    (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
-<<<<<<< HEAD
 
 (defun combine-elt-lst (elt lst)
    (if (null lst)
@@ -277,5 +276,3 @@
       (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
 
 
-=======
->>>>>>> d24960c8a7d661028769ab82ebf7e953a0e7e2c5
