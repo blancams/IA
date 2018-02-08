@@ -88,21 +88,56 @@
 
 ;;; EJERCICIO 1.2
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; auxsort (x lst)
+;;; Funcion auxiliar para la implementacion de insercion directa en diccionarios
+;;;
+;;; INPUT: x: vector a añadir (en orden) a la lista
+;;; lst: lista a la que introducir el vector x
+;;;
+;;; OUTPUT: lista ordenada con el elemento x introducido
+;;;
+(defun auxsort (x lst)
+(if (null lst)
+   (list x)
+   (if (> (car x) (car (car lst)))
+       (cons x lst)
+       (cons (car lst) (auxsort x (cdr lst))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sortdict (lst)
+;;; Funcion que implementa la ordenacion en un diccionario en base al primer elemento del par
+;;;
+;;; INPUT: lst: diccionario a ordenar
+;;;
+;;; OUTPUT: diccionario ordenado
+;;;
+(defun sortdict (lst)
+(if (null lst)
+   lst
+   (auxsort (car lst) (sortdict (cdr lst)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-conf-gendict (x vs)
+;;; Genera un diccionario con la similitud coseno entre un vector y todos los vectores
+;;; de una lista de vectores
+;;;
+;;; INPUT: x: vector, representado como una lista
+;;; vs: vector de vectores, representado como una lista de listas
+;;;
+;;; OUTPUT: diccionario formado por las similitudes y los vectores
+;;;
 (defun sc-conf-gendict (x vs)
    (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs))
 
-(defun sc-conf-auxsort (x lst)
-   (if (null lst)
-      (list x)
-      (if (> (car x) (car (car lst)))
-          (cons x lst)
-          (cons (car lst) (sc-conf-auxsort x (cdr lst))))))
-
-(defun sc-conf-sortdict (lst)
-   (if (null lst)
-      lst
-      (sc-conf-auxsort (car lst) (sc-conf-sortdict (cdr lst)))))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-conf-selvec (lst)
+;;; De un diccionario obtiene el vector correspondiente a cada similitud
+;;;
+;;; INPUT: lst: diccionario de similitudes-vectores
+;;;
+;;; OUTPUT: lista de vectores procedentes del diccionario en el mismo orden
+;;;
 (defun sc-conf-selvec (lst)
    (mapcar #'(lambda (y) (car (cdr y))) lst))
 
@@ -115,11 +150,61 @@
 ;;; conf: Nivel de confianza
 ;;; OUTPUT: Vectores cuya similitud es superior al nivel de confianza, ordenados
 ;;;
-;;; NO ESTÁ TERMINADO
 (defun sc-conf (x vs conf)
-   (sc-conf-selvec (sc-conf-sortdict (remove conf (sc-conf-gendict x vs) :test #'> :key #'car))))
+   (sc-conf-selvec (sortdict (remove conf (sc-conf-gendict x vs) :test #'> :key #'car))))
 
+;;; EJERCICIO 1.3
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-class-gendict (x vs func)
+;;; Realiza la misma funcion que sc-conf-gendict pero ahora tenemos en cuenta
+;;; que los vectores tienen un identificador, y la funcion para calcular la
+;;; similitud se pasa como parametro
+;;;
+;;; INPUT: x: vector, representado como una lista
+;;; vs: vector de vectores, representado como una lista de listas
+;;; func: funcion con la que calcular la similitud
+;;;
+;;; OUTPUT: diccionario formado por las similitudes y los identificadores de los vectores
+;;;
+(defun sc-class-gendict (x vs func)
+   (mapcar #'(lambda (y) (list (funcall func (rest x) (rest y)) (car y))) vs))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-class-selvec (lst)
+;;; Realiza la misma funcion que sc-conf-selvec pero ahora en vez de devolver el
+;;; vector, devuelve su identificacion junto con la similitud en un par
+;;;
+;;; INPUT: lst: diccionario de similitudes-vectores
+;;;
+;;; OUTPUT: lista de pares con identificadores de vectores y similitudes
+;;;
+(defun sc-class-selvec (lst)
+   (mapcar #'(lambda (y) (cons (second y) (first y))) lst))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-conf-alt (x vs func)
+;;; Devuelve lista de pares identificador-similitud ordenados por similitud a uno dado
+;;;
+;;; INPUT: x: vector, representado como una lista
+;;; vs: vector de vectores, representado como una lista de listas
+;;; func: funcion para calcular similitud
+;;; OUTPUT: Pares identificador-similitud ordenados
+;;;
+(defun sc-conf-alt (x vs func)
+   (sc-class-selvec (sortdict (sc-class-gendict x vs func))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-classifier (cats texts func)
+;;; Clasifica a los textos en categorías.
+;;;
+;;; INPUT: cats: vector de vectores, representado como una lista de listas
+;;; vs: vector de vectores, representado como una lista de listas
+;;; func: referencia a función para evaluar la similitud coseno
+;;; OUTPUT: Pares identificador de categoría con resultado de similitud coseno
+;;;
+(defun sc-classifier (cats texts func)
+   (mapcar #'(lambda (y) (car (sc-conf-alt y cats func))) texts))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;
 
