@@ -153,9 +153,13 @@
 (defun allroot (f lst tol)
    (allroot-aux f lst tol NIL))
 
-;;(allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75 1.25 1.75 2.25) 0.0001)
-;; Para ver si tiene solo un elemento: 
-;; (and (null (rest lst)) (not (null (first lst))))
-;;(allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75) 0.001)
-;;(bisect #'(lambda(x) (sin (* 6.28 x))) 0.25 0.75 0.001)
+(defun allind-aux (f a incr tol max ret)
+   (let ((b (+ a incr)))
+   (if (= b max)
+      ret
+      (allind-aux f b incr tol max (append ret (list (bisect f a b tol)))))))
+
+(defun allind (f a b N tol)
+   (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
+
 
