@@ -268,11 +268,20 @@
 (defun combine-elt-lst (elt lst)
    (if (null lst)
       NIL
-      (append (list (list elt (first lst))) (combine-elt-lst elt (rest lst)))))
+      (if (check-list elt)
+         (append (list (append elt (list (first lst)))) (combine-elt-lst elt (rest lst)))
+         (append (list (list elt (first lst))) (combine-elt-lst elt (rest lst))))))
 
 (defun combine-lst-lst (lst1 lst2)
    (if (null lst1)
       NIL
       (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
 
+(defun combine-list-of-lsts-aux (done todo)
+   (if (null todo)
+      done
+      (combine-list-of-lsts-aux (combine-lst-lst done (first todo)) (rest todo))))
+
+(defun combine-list-of-lsts (lstolsts) 
+   (combine-list-of-lsts-aux (combine-lst-lst (first lstolsts) (second lstolsts)) (cddr lstolsts)))
 
