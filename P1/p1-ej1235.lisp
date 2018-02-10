@@ -215,7 +215,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier (cats texts func)
-;;; Clasifica a los textos en categorías.
+;;; Clasifica a los textos en categorias.
 ;;;
 ;;; INPUT: cats: vector de vectores, representado como una lista de listas
 ;;; texts: vector de vectores, representado como una lista de listas
@@ -232,63 +232,127 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Finds a root of f between the points a and b using bisection.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; bisect (f a b tol)
 ;;
-;; If f(a)f(b)>=0 there is no guarantee that there will be a root in the
-;; interval, and the function will return NIL.
+;; Encuentra una raiz de f entre los puntos a y b utilizando biseccion.
 ;;
-;; f: function of a single real parameter with real values whose root
-;; we want to find
-;; a: lower extremum of the interval in which we search for the root
-;; b: b>a upper extremum of the interval in which we search for the root
-;; tol: tolerance for the stopping criterion: if b-a < tol the function
-;; returns (a+b)/2 as a solution.
+;; Si f(a)f(b)>=0, no hay garantia de que exista una raiz en el 
+;; intervalo y la funcion devuelve NIL.
 ;; 
-;; OUTPUT: Root of the function, or NIL if no root is found
+;; INPUT: 
+;;
+;;    f: funcion real de un solo parametro con valores reales
+;;       de la que queremos encontrar la raiz.
+;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
+;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
+;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;         devuelve (a+b)/2 como solucion.
+;; 
+;; OUTPUT: 
+;;
+;;    raiz de la funcion, o NIL si no se ha encontrado ninguna.
+;;
 (defun bisect (f a b tol)
    (let ((pto-medio (/ (+ a b) 2)))
    (cond ((>= (* (funcall f a) (funcall f b)) 0) NIL)
          ((< (- b a) tol) pto-medio)
          ((>= (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol))
          (t (bisect f a pto-medio tol)))))
+;;
+;; EJEMPLOS:
+;;
+;; (bisect #'(lambda(x) (sin (* 6.26 x))) 0.0 0.7 0.001) ;-> NIL
+;; (bisect #'(lambda(x) (sin (* 6.26 x))) 0.1 0.7 0.001) ;-> 0.5016602
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
-(defun allroot-aux (f lst tol ret)
-   (if (and (null (rest lst)) (not (null (first lst))))
-      ret
-      (allroot-aux f (rest lst) tol (append ret (list (bisect f (first lst) (second lst) tol))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; allroot (f lst tol)
+;;
+;; Encuentra todas las raices situadas entre valores consecutivos
+;; de una lista ordenada.
+;;
+;; Siempre que sgn(f(lst[i])) != sgn(f(lst[i+1])) la funcion buscara
+;; una raiz en el correspondiente intervalo.
+;;
+;; INPUT:
+;;
+;;    f: funcion real de un solo parametro con valores reales
+;;       de la que queremos encontrar la raiz.
+;;    lst: lista ordenada de valores reales (lst[i] < lst[i+1]).
+;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;         devuelve (a+b)/2 como solucion.
+;;
+;; OUTPUT: 
+;;
+;;    Una lista de valores reales conteniendo las raices de la
+;;    funcion en los sub-intervalos dados.
+;;
+(defun allroot-aux (f lst tol)
+   (unless (and (null (rest lst)) (not (null (first lst))))
+   (cons (bisect f (first lst) (second lst) tol) 
+      (allroot-aux f (rest lst) tol))))
 
-;;
-;; Finds all the roots that are located between consecutive values of a list
-;; of values
-;;
-;; Parameters:
-;;
-;; f: function of a single real parameter with real values whose root
-;; we want to find
-;; lst: ordered list of real values (lst[i] < lst[i+1])
-;; tol: tolerance for the stopping criterion: if b-a < tol the function
-;; returns (a+b)/2 as a solution.
-;;
-;; Whenever sgn(f(lst[i])) != sgn(f(lst[i+1])) this function looks for a
-;; root in the corresponding interval.
-;;
-;; Returns: A list o real values containing the roots of the function in the
-;: given sub-intervals
-;;
 (defun allroot (f lst tol)
-   (allroot-aux f lst tol NIL))
+   (unless (every #'null (allroot-aux f lst tol))))
+;;
+;; EJEMPLOS:
+;;
+;; (allroot #'(lambda(x) (sin (* 6.28 x))) '(0.1 2.25) 0.0001) ;-> NIL
+;; (allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75 1.25 1.75 2.25) 0.0001) 
+;; ;-> (0.50027466 1.0005188 1.5007629 2.001007)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun allind-aux (f a incr tol max ret)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; allind(f a b N tol)
+;;
+;; Divide un intervalo en cierto numero de sub-intervalos y encuentra
+;; todas las raices de la funcion f en los mismos.
+;; 
+;; El intervalo [a,b] es dividido en intervalos [x[i],x[i+1]] con 
+;; x[i] = a + i*dlt; en cada intervalo se busca una raiz, y todas
+;; las raices encontradas son devueltas en una lista.
+;;
+;; INPUT:
+;;
+;;    f: funcion real de un solo parametro con valores reales
+;;       de la que queremos encontrar la raiz.
+;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
+;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
+;;    N: Exponente del numero de intervalos en el que se divide [a,b]: 
+;;       [a,b] se divide en 2^N intervalos
+;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;         devuelve (a+b)/2 como solucion.
+;;
+;; OUTPUT: 
+;;    
+;;    Lista con todas las raices encontradas.
+;; 
+(defun allind-aux (f a incr tol max)
    (let ((b (+ a incr)))
-      (print (type-of incr))
-   (if (> b max)
-      ret
-      (allind-aux f b incr tol max (append ret (list (bisect f a b tol)))))))
+      (unless (> b max)
+         (cons (bisect f a b tol) (allind-aux f b incr tol max)))))
 
 (defun allind (f a b N tol)
-   (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
+   (unless (every #'null (allind-aux f a (/ (- b a) (expt 2 N)) tol b))))
+;;
+;; EJEMPLOS:
+;;
+;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 1 0.0001) ;-> NIL
+;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 2 0.0001)
+;; ;-> (0.50027084 1.0005027 1.5007347 2.0010324)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -305,8 +369,8 @@
 ;;;
 (defun combine-elt-lst (elt lst)
    (unless (null lst)
-      (append (list (list elt (first lst)))
-              (combine-elt-lst elt (rest lst)))))
+      (append (list (list elt (first lst))) 
+         (combine-elt-lst elt (rest lst)))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (combine-elt-lst 'a nil) ;-> nil                     ; caso base
