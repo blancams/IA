@@ -111,7 +111,7 @@
 ;;; OUTPUT: Vectores cuya similitud es superior al nivel de confianza, ordenados
 ;;;
 (defun sc-conf (cat vs conf)
-   (sc-conf-selvec (sort (remove conf (sc-conf-gendict cat vs) :test #'> :key #'first) #'< :key #'first)))
+   (sc-conf-selvec (sort (remove conf (sc-conf-gendict cat vs) :test #'> :key #'first) #'> :key #'first)))
 
 ;;; EJERCICIO 1.3
 
@@ -152,7 +152,7 @@
 ;;; OUTPUT: Pares identificador-similitud ordenados
 ;;;
 (defun sc-conf-alt (x vs func)
-   (sc-class-selvec (sort (sc-class-gendict x vs func) #'< :key #'first)))
+   (sc-class-selvec (sort (sc-class-gendict x vs func) #'> :key #'first)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier (cats texts func)
