@@ -1,3 +1,5 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;; EJERCICIO 1.1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -166,7 +168,7 @@
 (defun sc-classifier (cats texts func)
    (mapcar #'(lambda (y) (car (sc-conf-alt y cats func))) texts))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Finds a root of f between the points a and b using bisection.
 ;;
@@ -224,7 +226,9 @@
 (defun allind (f a b N tol)
    (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 3 ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; EJERCICIO 3.1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-elt-lst (elt lst)
@@ -240,6 +244,8 @@
       NIL
       (append (list elt (first lst)) (combine-elt-lst elt (rest lst)))))
 
+;;; EJERCICIO 3.2
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-lst-lst (lst1 lst2)
 ;;; Genera el producto cartesiano lst1 X lst2 (todas las combinaciones de
@@ -254,6 +260,8 @@
    (if (or (null lst1) (null lst2))
       NIL
       (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
+
+;;; EJERCICIO 3.3
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-elt-lol (elt lol)
