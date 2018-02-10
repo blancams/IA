@@ -8,12 +8,19 @@
 ;;;
 ;;; INPUT: x: vector, representado como una lista
 ;;;
-;;; OUTPUT: t si x es el vector cero, nil en caso contrario
+;;; OUTPUT: t si x es el vector cero o nil, nil en caso contrario
 ;;;
 (defun check-zero (x)
    (if (null x)
       t
-      (and (= (first x) 0) (check-zero (rest x)))))
+      (and (= (first x) 0)
+           (check-zero (rest x)))))
+;;;
+;;; EJEMPLOS:
+;;; (check-zero '()) ;-> t          ; caso base
+;;; (check-zero '(0 0 0)) ;-> t     ; caso tipico
+;;; (check-zero '(1 0 0)) ;-> nil   ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; prod-esc-rec (x y)
@@ -29,6 +36,11 @@
       0
       (+ (* (first x) (first y))
          (prod-esc-rec (rest x) (rest y)))))
+;;;
+;;; EJEMPLOS:
+;;; (prod-esc-rec '() '()) ;-> 0          ; caso base
+;;; (prod-esc-rec '(1 2) '(3 4)) ;-> 11   ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,6 +54,11 @@
 ;;;
 (defun prod-esc-mapcar (x y)
    (apply #'+ (mapcar #'* x y)))
+;;;
+;;; EJEMPLOS:
+;;; (prod-esc-mapcar '() '()) ;-> 0          ; caso base
+;;; (prod-esc-mapcar '(1 2) '(3 1)) ;-> 5    ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,10 +71,16 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-rec (x y)
-   (unless (or (null x) (null y) (check-zero x) (check-zero y))
+   (unless (or (check-zero x) (check-zero y))
       (/ (prod-esc-rec x y)
          (* (sqrt (prod-esc-rec x x))
             (sqrt (prod-esc-rec y y))))))
+;;;
+;;; EJEMPLOS:
+;;; (sc-rec '() '()) ;-> nil                 ; caso no permitido
+;;; (sc-rec '(0 0) '(0 0)) ;-> nil           ; caso no permitido
+;;; (sc-rec '(1 2) '(2 3)) ;-> 0.99227786    ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,10 +93,16 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-mapcar (x y)
-   (unless (or (null x) (null y) (check-zero x) (check-zero y))
+   (unless (or (check-zero x) (check-zero y))
       (/ (prod-esc-mapcar x y)
          (* (sqrt (prod-esc-mapcar x x))
             (sqrt (prod-esc-mapcar y y))))))
+;;;
+;;; EJEMPLOS:
+;;; (sc-mapcar '() '()) ;-> nil          ; caso no permitido
+;;; (sc-mapcar '(0 0) '(0 0)) ;-> nil    ; caso no permitido
+;;; (sc-mapcar '(1 2) '(2 4)) ;-> 1.0    ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; EJERCICIO 1.2
 
@@ -89,6 +118,11 @@
 ;;;
 (defun sc-conf-gendict (x vs)
    (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs))
+;;;
+;;; EJEMPLOS:
+;;; (sc-conf-gendict '(1 2) '((1 2) (1 3))) ;-> ((1.0 (1 2)) (0.98994946 (1 3)))
+;;; (sc-conf-gendict '(2 3) '((1 1) (1 2))) ;-> ((0.9805807 (1 1)) (0.99227786 (1 2)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf-selvec (lst)
@@ -99,7 +133,12 @@
 ;;; OUTPUT: lista de vectores procedentes del diccionario en el mismo orden
 ;;;
 (defun sc-conf-selvec (lst)
-   (mapcar #'(lambda (y) (car (cdr y))) lst))
+   (mapcar #'(lambda (y) (first (second y))) lst))
+;;;
+;;; EJEMPLOS:
+;;; (sc-conf-selvec '((1.0 (1 2)) (0.98994946 (1 3)))) ;-> ((1 2) (1 3))
+;;; (sc-conf-selvec '((0.9805807 (1 1)) (0.99227786 (1 2)))) ;-> ((1 1) (1 2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf (cat vs conf)
@@ -112,6 +151,11 @@
 ;;;
 (defun sc-conf (cat vs conf)
    (sc-conf-selvec (sort (remove conf (sc-conf-gendict cat vs) :test #'> :key #'first) #'> :key #'first)))
+;;;
+;;; EJEMPLOS:
+;;; (sc-conf '(1 2) '((1 2) (1 3) (1 4) (2 30)) 0.95) ;-> ((1 2) (1 3) (1 4))
+;;; (sc-conf '(2 5) '((1 5) (4 10)) 0.9) ;-> ((4 10) (1 5))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; EJERCICIO 1.3
 
@@ -129,6 +173,11 @@
 ;;;
 (defun sc-class-gendict (x vs func)
    (mapcar #'(lambda (y) (list (funcall func (rest x) (rest y)) (car y))) vs))
+;;;
+;;; EJEMPLOS:
+;;; (sc-class-gendict '(1 1 2) '((1 1 2) (2 1 3)) #'sc-rec) ;-> ((1.0 1) (0.98994946 2))
+;;; (sc-class-gendict '(1 2 3) '((1 1 1) (2 1 2)) #'sc-mapcar) ;-> ((0.9805807 1) (0.99227786 2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-class-selvec (lst)
@@ -141,6 +190,11 @@
 ;;;
 (defun sc-class-selvec (lst)
    (mapcar #'(lambda (y) (cons (second y) (first y))) lst))
+;;;
+;;; EJEMPLOS:
+;;; (sc-class-selvec '((1.0 1) (0.98994946 2))) ;-> ((1 . 1.0) (2 . 0.98994946))
+;;; (sc-class-selvec '((0.9805807 1) (0.99227786 2))) ;-> ((1 . 0.9805807) (2 . 0.99227786))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf-alt (x vs func)
@@ -153,6 +207,11 @@
 ;;;
 (defun sc-conf-alt (x vs func)
    (sc-class-selvec (sort (sc-class-gendict x vs func) #'> :key #'first)))
+;;;
+;;; EJEMPLOS:
+;;; (sc-conf-alt '(2 1 2) '((1 1 2) (2 1 3) (3 1 4) (4 2 30)) #'sc-rec) ;-> ((1 . 1.0) (2 . 0.98994946) (3 . 0.97618705) (4 . 0.9221943))
+;;; (sc-conf-alt '(3 2 5) '((1 1 5) (2 4 10)) #'sc-mapcar) ;-> ((2 . 1.0) (1 . 0.98328197))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier (cats texts func)
@@ -165,6 +224,11 @@
 ;;;
 (defun sc-classifier (cats texts func)
    (mapcar #'(lambda (y) (car (sc-conf-alt y cats func))) texts))
+;;;
+;;; EJEMPLOS:
+;;; (sc-classifier '((1 1 2) (2 5 10)) '((1 1 3) (2 1 4) (3 2 5)) #'sc-rec) ;-> ((1 . 0.98994946) (2 . 0.9761871) (1 . 0.9965458))
+;;; (sc-classifier '((1 43 23 12) (2 33 54 24)) '((1 3 22 134) (2 43 26 58)) #'sc-mapcar) ;-> ((2 . 0.48981872) (1 . 0.81555086))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -239,7 +303,14 @@
 ;;;
 (defun combine-elt-lst (elt lst)
    (unless (null lst)
-      (append (list elt (first lst)) (combine-elt-lst elt (rest lst)))))
+      (append (list (list elt (first lst)))
+              (combine-elt-lst elt (rest lst)))))
+;;;
+;;; EJEMPLOS:
+;;; (combine-elt-lst 'a nil) ;-> nil                     ; caso base
+;;; (combine-elt-lst nil '(1 2)) ;-> ((NIL 1) (NIL 2))   ; caso atipico
+;;; (combine-elt-lst 'a '(1 2)) ;-> ((A 1) (A 2))        ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; EJERCICIO 3.2
 
@@ -255,7 +326,14 @@
 ;;;
 (defun combine-lst-lst (lst1 lst2)
    (unless (or (null lst1) (null lst2))
-      (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
+      (append (combine-elt-lst (first lst1) lst2)
+              (combine-lst-lst (rest lst1) lst2))))
+;;;
+;;; EJEMPLOS:
+;;; (combine-lst-lst '() '()) ;-> nil                                ; caso no permitido
+;;; (combine-lst-lst '() '(1 2)) ;-> nil                             ; caso base
+;;; (combine-lst-lst '(1 2) '(a b)) ;-> ((1 A) (1 B) (2 A) (2 B))    ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; EJERCICIO 3.3
 
@@ -270,6 +348,11 @@
 ;;;
 (defun combine-elt-lol (elt lol)
    (mapcar #'(lambda (y) (cons elt y)) lol))
+;;;
+;;; EJEMPLOS:
+;;; (combine-elt-lol 'a nil) ;-> nil                           ; caso no permitido
+;;; (combine-elt-lol 'a '((1 2) (3 4))) ;-> ((A 1 2) (A 3 4))  ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-lst-lol (lst lol)
@@ -282,6 +365,12 @@
 ;;;
 (defun combine-lst-lol (lst lol)
    (mapcan #'(lambda (z) (combine-elt-lol z lol)) lst))
+;;;
+;;; EJEMPLOS:
+;;; (combine-lst-lol nil '((1 2) (3 4))) ;-> nil                                    ; caso no permitido
+;;; (combine-lst-lol '(1 2) nil) ;-> nil                                            ; caso no permitido
+;;; (combine-lst-lol '(a b) '((1 2) (3 4))) ;-> ((A 1 2) (A 3 4) (B 1 2) (B 3 4))   ; caso tipico
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-list-of-lsts (lstolsts)
@@ -295,4 +384,17 @@
 (defun combine-list-of-lsts (lstolsts)
    (if (null lstolsts)
       '(nil)
-      (append (combine-lst-lol (first lstolsts) (combine-list-of-lsts (rest lstolsts))))))
+      (append (combine-lst-lol (first lstolsts)
+              (combine-list-of-lsts (rest lstolsts))))))
+;;;
+;;; EJEMPLOS:
+;;; (combine-list-of-lsts '()) ;-> (nil)                                ; caso base
+;;; (combine-list-of-lsts '(() (+ -) (1 2 3 4))) ;-> nil                ; caso no permitido
+;;; (combine-list-of-lsts '((a b c) () (1 2 3 4))) ;-> nil              ; caso no permitido
+;;; (combine-list-of-lsts '((a b c) (+ -) ())) ;-> nil                  ; caso no permitido
+;;; (combine-list-of-lsts '((a b c))) ;-> ((a) (b) (c))                 ; caso particular
+;;; (combine-list-of-lsts '((a b c) (+ -) (1 2 3 4))) ;->               ; caso tipico
+;;; ((A + 1) (A + 2) (A + 3) (A + 4) (A - 1) (A - 2) (A - 3) (A - 4)
+;;; (B + 1) (B + 2) (B + 3) (B + 4) (B - 1) (B - 2) (B - 3) (B - 4)
+;;; (C + 1) (C + 2) (C + 3) (C + 4) (C - 1) (C - 2) (C - 3) (C - 4))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
