@@ -222,10 +222,9 @@
 ;;
 (defun bisect (f a b tol)
    (let ((pto-medio (/ (+ a b) 2)))
-   (cond ((= (funcall f pto-medio) 0) pto-medio)
+   (cond ((< (- b a) tol) pto-medio)
          ((> (* (funcall f a) (funcall f b)) 0) NIL)
-         ((< (- b a) tol) pto-medio)
-         ((> (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol))
+         ((>= (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol))
          (t (bisect f a pto-medio tol)))))
 
 
@@ -265,23 +264,38 @@
 (defun allind (f a b N tol)
    (allind-aux f a (/ (- b a) (expt 2 N)) tol b NIL))
 
+
+
+
 (defun combine-elt-lst (elt lst)
    (if (null lst)
       NIL
-      (if (check-list elt)
-         (append (list (append elt (list (first lst)))) (combine-elt-lst elt (rest lst)))
-         (append (list (list elt (first lst))) (combine-elt-lst elt (rest lst))))))
+      (append (list (list elt (first lst))) (combine-elt-lst elt (rest lst)))))
 
 (defun combine-lst-lst (lst1 lst2)
    (if (or (null lst1) (null lst2))
       NIL
       (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
 
+
+(defun combine-elt-list-of-lsts (elt lstolsts)
+   (if (null lstolsts)
+      NIL
+      (append (list (append (first lstolsts) elt)) (combine-elt-list-of-lsts elt (rest lstolsts)))))
+
+(defun combine-list-of-lsts-lst (lst lstolsts)
+   (if (or (null lst) (null lstolsts))
+      NIL
+      (append (combine-elt-list-of-lsts (first lst) lstolsts) 
+         (combine-lst-lst (rest lst) lstolsts))))
+
 (defun combine-list-of-lsts-aux (done todo)
    (if (null todo)
       done
       (combine-list-of-lsts-aux (combine-lst-lst done (first todo)) (rest todo))))
 
+
+
 (defun combine-list-of-lsts (lstolsts) 
-   (combine-list-of-lsts-aux (combine-lst-lst (first lstolsts) (second lstolsts)) (cddr lstolsts)))
+    (combine-list-of-lsts-aux (combine-lst-lst (first lstolsts) (second lstolsts)) (cddr lstolsts)))
 
