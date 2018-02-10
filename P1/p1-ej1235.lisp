@@ -54,11 +54,10 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-rec (x y)
-   (if (or (null x) (null y) (check-zero x) (check-zero y))
-   nil
-   (/ (prod-esc-rec x y)
-      (* (sqrt (prod-esc-rec x x))
-         (sqrt (prod-esc-rec y y))))))
+   (unless (or (null x) (null y) (check-zero x) (check-zero y))
+      (/ (prod-esc-rec x y)
+         (* (sqrt (prod-esc-rec x x))
+            (sqrt (prod-esc-rec y y))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,11 +70,10 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-mapcar (x y)
-   (if (or (null x) (null y) (check-zero x) (check-zero y))
-   nil
-   (/ (prod-esc-mapcar x y)
-      (* (sqrt (prod-esc-mapcar x x))
-         (sqrt (prod-esc-mapcar y y))))))
+   (unless (or (null x) (null y) (check-zero x) (check-zero y))
+      (/ (prod-esc-mapcar x y)
+         (* (sqrt (prod-esc-mapcar x x))
+            (sqrt (prod-esc-mapcar y y))))))
 
 ;;; EJERCICIO 1.2
 
@@ -240,8 +238,7 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-elt-lst (elt lst)
-   (if (null lst)
-      NIL
+   (unless (null lst)
       (append (list elt (first lst)) (combine-elt-lst elt (rest lst)))))
 
 ;;; EJERCICIO 3.2
@@ -257,8 +254,7 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-lst-lst (lst1 lst2)
-   (if (or (null lst1) (null lst2))
-      NIL
+   (unless (or (null lst1) (null lst2))
       (append (combine-elt-lst (first lst1) lst2) (combine-lst-lst (rest lst1) lst2))))
 
 ;;; EJERCICIO 3.3
