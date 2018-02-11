@@ -257,15 +257,46 @@
 ;;
 (defun bisect (f a b tol)
    (let ((pto-medio (/ (+ a b) 2)))
-   (cond ((>= (* (funcall f a) (funcall f b)) 0) NIL)
-         ((< (- b a) tol) pto-medio)
-         ((>= (* (funcall f a) (funcall f pto-medio)) 0) (bisect f pto-medio b tol))
-         (t (bisect f a pto-medio tol)))))
+   (unless (>= (* (funcall f a) (funcall f b)) 0) 
+      (if (< (- b a) tol) 
+         pto-medio
+         (if (>= (* (funcall f a) (funcall f pto-medio)) 0) 
+            (bisect f pto-medio b tol)
+            (bisect f a pto-medio tol))))))
 ;;
 ;; EJEMPLOS:
 ;;
 ;; (bisect #'(lambda(x) (sin (* 6.26 x))) 0.0 0.7 0.001) ;-> NIL
 ;; (bisect #'(lambda(x) (sin (* 6.26 x))) 0.1 0.7 0.001) ;-> 0.5016602
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clean (lst)
+;;
+;; Funcion no destructiva que devuelve una lista vacia si todos 
+;; los elementos de lst son NIL.
+;; 
+;; INPUT: 
+;;
+;;    lst: lista que se quiere evaluar.
+;; 
+;; OUTPUT: 
+;;
+;;    NIL si todos los elementos de lst son NIL;
+;;    lst en caso contrario.
+;;
+(defun clean (lst)
+   (unless (every #'null lst) 
+      lst))
+;;
+;; EJEMPLOS:
+;;
+;; (clean '(NIL NIL NIL)) ;-> NIL
+;; (clean '(NIL 1 NIL)) ;-> (NIL 1 NIL)
+;; (clean '(1 2 3)) ;-> (1 2 3)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -299,7 +330,7 @@
       (allroot-aux f (rest lst) tol))))
 
 (defun allroot (f lst tol)
-   (unless (every #'null (allroot-aux f lst tol))))
+   (clean (allroot-aux f lst tol)))
 ;;
 ;; EJEMPLOS:
 ;;
@@ -311,46 +342,50 @@
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; allind(f a b N tol)
-;;
-;; Divide un intervalo en cierto numero de sub-intervalos y encuentra
-;; todas las raices de la funcion f en los mismos.
-;; 
-;; El intervalo [a,b] es dividido en intervalos [x[i],x[i+1]] con 
-;; x[i] = a + i*dlt; en cada intervalo se busca una raiz, y todas
-;; las raices encontradas son devueltas en una lista.
-;;
-;; INPUT:
-;;
-;;    f: funcion real de un solo parametro con valores reales
-;;       de la que queremos encontrar la raiz.
-;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
-;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
-;;    N: Exponente del numero de intervalos en el que se divide [a,b]: 
-;;       [a,b] se divide en 2^N intervalos
-;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
-;;         devuelve (a+b)/2 como solucion.
-;;
-;; OUTPUT: 
-;;    
-;;    Lista con todas las raices encontradas.
-;; 
-(defun allind-aux (f a incr tol max)
-   (let ((b (+ a incr)))
-      (unless (> b max)
-         (cons (bisect f a b tol) (allind-aux f b incr tol max)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; allind(f a b N tol)
+;;;
+;;; Divide un intervalo en cierto numero de sub-intervalos y encuentra
+;;; todas las raices de la funcion f en los mismos.
+;;; 
+;;; El intervalo [a,b] es dividido en intervalos [x[i],x[i+1]] con 
+;;; x[i] = a + i*dlt; en cada intervalo se busca una raiz, y todas
+;;; las raices encontradas son devueltas en una lista.
+;;;
+;;; INPUT:
+;;;
+;;;    f: funcion real de un solo parametro con valores reales
+;;;       de la que queremos encontrar la raiz.
+;;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
+;;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
+;;;    N: Exponente del numero de intervalos en el que se divide [a,b]: 
+;;;       [a,b] se divide en 2^N intervalos
+;;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;;         devuelve (a+b)/2 como solucion.
+;;;
+;;; OUTPUT: 
+;;;    
+;;;    Lista con todas las raices encontradas.
+;;; 
+(defun allind-aux (f x incr tol max)
+   ;(coerce x 'double-float) (print x)
+   ;(coerce incr 'double-float)
+   (let ((y (+ x incr)))
+      (unless (> y max)
+         ;(print y)
+         ;(format t "~,7f" (float b))
+         (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
 
 (defun allind (f a b N tol)
-   (unless (every #'null (allind-aux f a (/ (- b a) (expt 2 N)) tol b))))
-;;
-;; EJEMPLOS:
-;;
-;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 1 0.0001) ;-> NIL
-;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 2 0.0001)
-;; ;-> (0.50027084 1.0005027 1.5007347 2.0010324)
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b)))
+;;;
+;;; EJEMPLOS:
+;;;
+;;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 1 0.0001) ;-> NIL
+;;; (allind #'(lambda(x) (sin (* 6.28 x))) 0.1 2.25 2 0.0001)
+;;; ;-> (0.50027084 1.0005027 1.5007347 2.0010324);
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -369,7 +404,7 @@
 ;;;
 (defun combine-elt-lst (elt lst)
    (unless (null lst)
-      (append (list (list elt (first lst))) 
+      (cons (list elt (first lst)) 
          (combine-elt-lst elt (rest lst)))))
 ;;;
 ;;; EJEMPLOS:
@@ -393,7 +428,7 @@
 (defun combine-lst-lst (lst1 lst2)
    (unless (or (null lst1) (null lst2))
       (append (combine-elt-lst (first lst1) lst2)
-              (combine-lst-lst (rest lst1) lst2))))
+              (combine-lst-lst (rest lst1) lst2))))2
 ;;;
 ;;; EJEMPLOS:
 ;;; (combine-lst-lst '() '()) ;-> nil                                ; caso no permitido
