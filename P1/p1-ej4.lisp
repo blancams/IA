@@ -10,21 +10,21 @@
 (defconstant +or+     'v)
 (defconstant +not+    '¬)
 
-(defun truth-value-p (x) 
+(defun truth-value-p (x)
   (or (eql x T) (eql x NIL)))
 
-(defun unary-connector-p (x) 
+(defun unary-connector-p (x)
   (eql x +not+))
 
-(defun binary-connector-p (x) 
-  (or (eql x +bicond+) 
+(defun binary-connector-p (x)
+  (or (eql x +bicond+)
       (eql x +cond+)))
 
-(defun n-ary-connector-p (x) 
-  (or (eql x +and+) 
+(defun n-ary-connector-p (x)
+  (or (eql x +and+)
       (eql x +or+)))
 
-(defun connector-p (x) 
+(defun connector-p (x)
   (or (unary-connector-p  x)
       (binary-connector-p x)
       (n-ary-connector-p   x)))
@@ -33,17 +33,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.1
 ;; Predicado para determinar si una expresion en LISP
-;; es un literal positivo 
+;; es un literal positivo
 ;;
-;; RECIBE   : expresion 
-;; EVALUA A : T si la expresion es un literal positivo, 
-;;            NIL en caso contrario. 
+;; RECIBE   : expresion
+;; EVALUA A : T si la expresion es un literal positivo,
+;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun positive-literal-p (x)
-  ;;
-  ;; 4.1.1 Completa el codigo
-  ;;
-  )
+  (unless (or (not (atom x))
+              (connector-p x)
+              (truth-value-p x))
+    t))
 
 ;; EJEMPLOS:
 (positive-literal-p 'p)
@@ -61,17 +61,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.2
 ;; Predicado para determinar si una expresion
-;; es un literal negativo 
+;; es un literal negativo
 ;;
-;; RECIBE   : expresion x 
-;; EVALUA A : T si la expresion es un literal negativo, 
-;;            NIL en caso contrario. 
+;; RECIBE   : expresion x
+;; EVALUA A : T si la expresion es un literal negativo,
+;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun negative-literal-p (x)
-  ;;
-  ;; 4.1.2 Completa el codigo
-  ;;
-  )
+  (unless (or (atom x)
+              (not (and (unary-connector-p (first x))
+                        (positive-literal-p (second x))
+                        (null (third x)))))
+    t))
 
 ;; EJEMPLOS:
 (negative-literal-p '(¬ p))        ; T
@@ -90,21 +91,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.3
-;; Predicado para determinar si una expresion es un literal  
+;; Predicado para determinar si una expresion es un literal
 ;;
-;; RECIBE   : expresion x  
-;; EVALUA A : T si la expresion es un literal, 
-;;            NIL en caso contrario. 
+;; RECIBE   : expresion x
+;; EVALUA A : T si la expresion es un literal,
+;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun literal-p (x) 
-  ;;
-  ;; 4.1.3 Completa el codigo
-  ;;
-  )
+(defun literal-p (x)
+  (or (positive-literal-p x)
+      (negative-literal-p x)))
 
 ;; EJEMPLOS:
-(literal-p 'p)             
-(literal-p '(¬ p))      
+(literal-p 'p)
+(literal-p '(¬ p))
 ;;; evaluan a T
 (literal-p '(p))
 (literal-p '(¬ (v p q)))
@@ -112,10 +111,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Predicado para determinar si una expresion esta en formato prefijo 
+;; Predicado para determinar si una expresion esta en formato prefijo
 ;;
-;; RECIBE   : expresion x 
-;; EVALUA A : T si x esta en formato prefijo, NIL en caso contrario. 
+;; RECIBE   : expresion x
+;; EVALUA A : T si x esta en formato prefijo, NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-prefix-p (x)
   (unless (null x)             ;; NIL no es FBF en formato prefijo (por convencion)
@@ -126,19 +125,19 @@
                (cond
                 ((unary-connector-p connector)  ;; Si el primer elemento es un connector unario
                  (and (null (rest rest_1))      ;; deberia tener la estructura (<conector> FBF)
-                      (wff-prefix-p (first rest_1)))) 
+                      (wff-prefix-p (first rest_1))))
                 ((binary-connector-p connector) ;; Si el primer elemento es un conector binario
-                 (let ((rest_2 (rest rest_1)))  ;; deberia tener la estructura 
+                 (let ((rest_2 (rest rest_1)))  ;; deberia tener la estructura
                    (and (null (rest rest_2))    ;; (<conector> FBF1 FBF2)
                         (wff-prefix-p (first rest_1))
-                        (wff-prefix-p (first rest_2)))))               
+                        (wff-prefix-p (first rest_2)))))
                 ((n-ary-connector-p connector)  ;; Si el primer elemento es un conector enario
                  (or (null rest_1)              ;; conjuncion o disyuncion vacias
-                     (and (wff-prefix-p (first rest_1)) ;; tienen que ser FBF los operandos 
+                     (and (wff-prefix-p (first rest_1)) ;; tienen que ser FBF los operandos
                           (let ((rest_2 (rest rest_1)))
                             (or (null rest_2)           ;; conjuncion o disyuncion con un elemento
-                                (wff-prefix-p (cons connector rest_2)))))))	
-                (t NIL)))))))                   ;; No es FBF en formato prefijo 
+                                (wff-prefix-p (cons connector rest_2)))))))
+                (t NIL)))))))                   ;; No es FBF en formato prefijo
 ;;
 ;; EJEMPLOS:
 (wff-prefix-p '(v))
@@ -158,17 +157,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.4
-;; Predicado para determinar si una expresion esta en formato prefijo 
+;; Predicado para determinar si una expresion esta en formato prefijo
 ;;
-;; RECIBE   : expresion x 
-;; EVALUA A : T si x esta en formato prefijo, 
-;;            NIL en caso contrario. 
+;; RECIBE   : expresion x
+;; EVALUA A : T si x esta en formato prefijo,
+;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-p (x)
   ;;
   ;; 4.1.4 Completa el codigo
   ;;
-  ) 
+  )
 
 ;;
 ;; EJEMPLOS:
@@ -176,33 +175,33 @@
 (wff-infix-p 'a) 						; T
 (wff-infix-p '(^)) 					; T  ;; por convencion
 (wff-infix-p '(v)) 					; T  ;; por convencion
-(wff-infix-p '(A ^ (v))) 			      ; T  
-(wff-infix-p '( a ^ b ^ (p v q) ^ (¬ r) ^ s))  	; T 
+(wff-infix-p '(A ^ (v))) 			      ; T
+(wff-infix-p '( a ^ b ^ (p v q) ^ (¬ r) ^ s))  	; T
 (wff-infix-p '(A => B)) 				; T
 (wff-infix-p '(A => (B <=> C))) 			; T
-(wff-infix-p '( B => (A ^ C ^ D))) 			; T   
-(wff-infix-p '( B => (A ^ C))) 			; T 
-(wff-infix-p '( B ^ (A ^ C))) 			; T 
-(wff-infix-p '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p ) ^ e))  ; T 
+(wff-infix-p '( B => (A ^ C ^ D))) 			; T
+(wff-infix-p '( B => (A ^ C))) 			; T
+(wff-infix-p '( B ^ (A ^ C))) 			; T
+(wff-infix-p '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p ) ^ e))  ; T
 (wff-infix-p nil) 					; NIL
 (wff-infix-p '(a ^)) 					; NIL
 (wff-infix-p '(^ a)) 					; NIL
 (wff-infix-p '(a)) 					; NIL
 (wff-infix-p '((a))) 				      ; NIL
 (wff-infix-p '((a) b))   			      ; NIL
-(wff-infix-p '(^ a b q (¬ r) s))  		      ; NIL 
-(wff-infix-p '( B => A C)) 			      ; NIL   
-(wff-infix-p '( => A)) 				      ; NIL   
-(wff-infix-p '(A =>)) 				      ; NIL   
+(wff-infix-p '(^ a b q (¬ r) s))  		      ; NIL
+(wff-infix-p '( B => A C)) 			      ; NIL
+(wff-infix-p '( => A)) 				      ; NIL
+(wff-infix-p '(A =>)) 				      ; NIL
 (wff-infix-p '(A => B <=> C)) 		      ; NIL
-(wff-infix-p '( B => (A ^ C v D))) 		      ; NIL   
-(wff-infix-p '( B ^ C v D )) 			      ; NIL 
-(wff-infix-p '((p v (a => e (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p ) ^ e)); NIL 
+(wff-infix-p '( B => (A ^ C v D))) 		      ; NIL
+(wff-infix-p '( B ^ C v D )) 			      ; NIL
+(wff-infix-p '((p v (a => e (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p ) ^ e)); NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convierte FBF en formato prefijo a FBF en formato infijo
 ;;
-;; RECIBE   : FBF en formato prefijo 
+;; RECIBE   : FBF en formato prefijo
 ;; EVALUA A : FBF en formato infijo
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun prefix-to-infix (wff)
@@ -212,20 +211,20 @@
       (let ((connector      (first wff))
             (elements-wff (rest wff)))
         (cond
-         ((unary-connector-p connector) 
+         ((unary-connector-p connector)
           (list connector (prefix-to-infix (second wff))))
-         ((binary-connector-p connector) 
+         ((binary-connector-p connector)
           (list (prefix-to-infix (second wff))
                 connector
                 (prefix-to-infix (third wff))))
-         ((n-ary-connector-p connector) 
-          (cond 
-           ((null elements-wff)        ;;; conjuncion o disyuncion vacias. 
+         ((n-ary-connector-p connector)
+          (cond
+           ((null elements-wff)        ;;; conjuncion o disyuncion vacias.
             wff)                       ;;; por convencion, se acepta como fbf en formato infijo
            ((null (cdr elements-wff))  ;;; conjuncion o disyuncion con un unico elemento
-            (prefix-to-infix (car elements-wff)))  
-           (t (cons (prefix-to-infix (first elements-wff)) 
-                    (mapcan #'(lambda(x) (list connector (prefix-to-infix x))) 
+            (prefix-to-infix (car elements-wff)))
+           (t (cons (prefix-to-infix (first elements-wff))
+                    (mapcan #'(lambda(x) (list connector (prefix-to-infix x)))
                       (rest elements-wff))))))
          (t NIL)))))) ;; no deberia llegar a este paso nunca
 
@@ -242,16 +241,16 @@
 (prefix-to-infix '(^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E))
 ;;; ((P V (A => (B ^ (¬ C) ^ D))) ^ ((P <=> (¬ Q)) ^ P) ^ E)
 (prefix-to-infix '(^ (v p (=> a (^ b (¬ c) d))))) ; (P V (A => (B ^ (¬ C) ^ D)))
-(prefix-to-infix '(^ (^ (<=> p (¬ q)) p ) e))     ; (((P <=> (¬ Q)) ^ P) ^ E)  
+(prefix-to-infix '(^ (^ (<=> p (¬ q)) p ) e))     ; (((P <=> (¬ Q)) ^ P) ^ E)
 (prefix-to-infix '( v (¬ p) q (¬ r) (¬ s)))       ; ((¬ P) V Q V (¬ R) V (¬ S))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.5
 ;;
 ;; Convierte FBF en formato infijo a FBF en formato prefijo
-;;  
-;; RECIBE   : FBF en formato infijo 
-;; EVALUA A : FBF en formato prefijo 
+;;
+;; RECIBE   : FBF en formato infijo
+;; EVALUA A : FBF en formato prefijo
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun infix-to-prefix (wff)
   ;;
@@ -267,11 +266,11 @@
 (infix-to-prefix '((a)))   ;; NIL
 (infix-to-prefix '(a))     ;; NIL
 (infix-to-prefix '(((a)))) ;; NIL
-(prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p) ^ e)) ) 
+(prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p) ^ e)) )
 ;;-> ((P V (A => (B ^ (¬ C) ^ D))) ^ ((P <=> (¬ Q)) ^ P) ^ E)
 
 
-(infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))  
+(infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))
 ;; (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
 
 (infix-to-prefix '(¬ ((¬ p) v q v (¬ r) v (¬ s))))
@@ -290,14 +289,14 @@
 
 
 (infix-to-prefix 'a)  ; A
-(infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))  
+(infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))
 ;; (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
 
 (infix-to-prefix '(¬ ((¬ p) v q v (¬ r) v (¬ s))))
 ;; (¬ (V (¬ P) Q (¬ R) (¬ S)))
 
 (infix-to-prefix  (prefix-to-infix '(^ (v p (=> a (^ b (¬ c) d)))))) ; '(v p (=> a (^ b (¬ c) d))))
-(infix-to-prefix  (prefix-to-infix '(^ (^ (<=> p (¬ q)) p ) e))) ; '(^ (^ (<=> p (¬ q)) p ) e))  
+(infix-to-prefix  (prefix-to-infix '(^ (^ (<=> p (¬ q)) p ) e))) ; '(^ (^ (<=> p (¬ q)) p ) e))
 (infix-to-prefix (prefix-to-infix '( v (¬ p) q (¬ r) (¬ s))))  ; '( v (¬ p) q (¬ r) (¬ s)))
 ;;;
 
@@ -307,10 +306,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.6
-;; Predicado para determinar si una FBF es una clausula  
+;; Predicado para determinar si una FBF es una clausula
 ;;
-;; RECIBE   : FBF en formato prefijo 
-;; EVALUA A : T si FBF es una clausula, NIL en caso contrario. 
+;; RECIBE   : FBF en formato prefijo
+;; EVALUA A : T si FBF es una clausula, NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun clause-p (wff)
   ;;
@@ -337,11 +336,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 1.7
-;; Predicado para determinar si una FBF esta en FNC  
+;; Predicado para determinar si una FBF esta en FNC
 ;;
-;; RECIBE   : FFB en formato prefijo 
-;; EVALUA A : T si FBF esta en FNC con conectores, 
-;;            NIL en caso contrario. 
+;; RECIBE   : FFB en formato prefijo
+;; EVALUA A : T si FBF esta en FNC con conectores,
+;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun cnf-p (wff)
   ;;
@@ -372,16 +371,16 @@
 (cnf-p '(^ (v a  (v b c)) (v q r) (v (¬ r) s) a b)) ; NIL
 (cnf-p '(^ (v a (^ b c)) (^ q r) (v (¬ r) s) a b))  ; NIL
 (cnf-p '(¬ (v p q)))                                ; NIL
-(cnf-p '(v p q (r) s))                              ; NIL 
+(cnf-p '(v p q (r) s))                              ; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.1: Incluya comentarios en el codigo adjunto
 ;;
-;; Dada una FBF, evalua a una FBF equivalente 
+;; Dada una FBF, evalua a una FBF equivalente
 ;; que no contiene el connector <=>
 ;;
-;; RECIBE   : FBF en formato prefijo 
-;; EVALUA A : FBF equivalente en formato prefijo 
+;; RECIBE   : FBF en formato prefijo
+;; EVALUA A : FBF equivalente en formato prefijo
 ;;            sin connector <=>
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -392,10 +391,10 @@
       (if (eq connector +bicond+)
           (let ((wff1 (eliminate-biconditional (second wff)))
                 (wff2 (eliminate-biconditional (third  wff))))
-            (list +and+ 
+            (list +and+
                   (list +cond+ wff1 wff2)
                   (list +cond+ wff2 wff1)))
-        (cons connector 
+        (cons connector
               (mapcar #'eliminate-biconditional (rest wff)))))))
 
 ;;
@@ -412,15 +411,15 @@
 ;; Dada una FBF, que contiene conectores => evalua a
 ;; una FBF equivalente que no contiene el connector =>
 ;;
-;; RECIBE   : wff en formato prefijo sin el connector <=> 
-;; EVALUA A : wff equivalente en formato prefijo 
+;; RECIBE   : wff en formato prefijo sin el connector <=>
+;; EVALUA A : wff equivalente en formato prefijo
 ;;            sin el connector =>
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun eliminate-conditional (wff)  
+(defun eliminate-conditional (wff)
   ;;
   ;; 4.2.2 Completa el codigo
   ;;
-  )       
+  )
 
 ;;
 ;; EJEMPLOS:
@@ -431,13 +430,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.3
-;; Dada una FBF, que no contiene los conectores <=>, => 
-;; evalua a una FNF equivalente en la que la negacion  
+;; Dada una FBF, que no contiene los conectores <=>, =>
+;; evalua a una FNF equivalente en la que la negacion
 ;; aparece unicamente en literales negativos
 ;;
-;; RECIBE   : FBF en formato prefijo sin conector <=>, => 
-;; EVALUA A : FBF equivalente en formato prefijo en la que 
-;;            la negacion  aparece unicamente en literales 
+;; RECIBE   : FBF en formato prefijo sin conector <=>, =>
+;; EVALUA A : FBF equivalente en formato prefijo en la que
+;;            la negacion  aparece unicamente en literales
 ;;            negativos.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun reduce-scope-of-negation (wff)
@@ -448,29 +447,29 @@
 
 (defun exchange-and-or (connector)
   (cond
-   ((eq connector +and+) +or+)    
+   ((eq connector +and+) +or+)
    ((eq connector +or+) +and+)
    (t connector)))
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(reduce-scope-of-negation '(¬ (v p (¬ q) r))) 
+(reduce-scope-of-negation '(¬ (v p (¬ q) r)))
 ;;; (^ (¬ P) Q (¬ R))
-(reduce-scope-of-negation '(¬ (^ p (¬ q) (v  r s (¬ a))))) 
+(reduce-scope-of-negation '(¬ (^ p (¬ q) (v  r s (¬ a)))))
 ;;;  (V (¬ P) Q (^ (¬ R) (¬ S) A))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 4.2.4: Comente el codigo adjunto 
+;; EJERCICIO 4.2.4: Comente el codigo adjunto
 ;;
-;; Dada una FBF, que no contiene los conectores <=>, => en la 
+;; Dada una FBF, que no contiene los conectores <=>, => en la
 ;; que la negacion aparece unicamente en literales negativos
-;; evalua a una FNC equivalente en FNC con conectores ^, v  
+;; evalua a una FNC equivalente en FNC con conectores ^, v
 ;;
-;; RECIBE   : FBF en formato prefijo sin conector <=>, =>, 
-;;            en la que la negacion aparece unicamente 
+;; RECIBE   : FBF en formato prefijo sin conector <=>, =>,
+;;            en la que la negacion aparece unicamente
 ;;            en literales negativos
-;; EVALUA A : FBF equivalente en formato prefijo FNC 
+;; EVALUA A : FBF equivalente en formato prefijo FNC
 ;;            con conectores ^, v
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun combine-elt-lst (elt lst)
@@ -478,8 +477,18 @@
       (list (list elt))
     (mapcar #'(lambda (x) (cons elt x)) lst)))
 
+(defun exchange-NF-aux (nf)
+  (if (null nf)
+      NIL
+    (let ((lst (first nf)))
+      (mapcan #'(lambda (x)
+                  (combine-elt-lst
+                   x
+                   (exchange-NF-aux (rest nf))))
+        (if (literal-p lst) (list lst) (rest lst))))))
+
 (defun exchange-NF (nf)
-  (if (or (null nf) (literal-p nf)) 
+  (if (or (null nf) (literal-p nf))
       nf
     (let ((connector (first nf)))
       (cons (exchange-and-or connector)
@@ -487,27 +496,17 @@
                           (cons connector x))
                 (exchange-NF-aux (rest nf)))))))
 
-(defun exchange-NF-aux (nf)
-  (if (null nf) 
-      NIL
-    (let ((lst (first nf)))
-      (mapcan #'(lambda (x) 
-                  (combine-elt-lst 
-                   x 
-                   (exchange-NF-aux (rest nf)))) 
-        (if (literal-p lst) (list lst) (rest lst))))))
-
 (defun simplify (connector lst-wffs )
   (if (literal-p lst-wffs)
-      lst-wffs                    
-    (mapcan #'(lambda (x) 
-                (cond 
+      lst-wffs
+    (mapcan #'(lambda (x)
+                (cond
                  ((literal-p x) (list x))
                  ((equal connector (first x))
-                  (mapcan 
-                      #'(lambda (y) (simplify connector (list y))) 
-                    (rest x))) 
-                 (t (list x))))               
+                  (mapcan
+                      #'(lambda (y) (simplify connector (list y)))
+                    (rest x)))
+                 (t (list x))))
       lst-wffs)))
 
 (defun cnf (wff)
@@ -515,11 +514,11 @@
    ((cnf-p wff) wff)
    ((literal-p wff)
     (list +and+ (list +or+ wff)))
-   ((let ((connector (first wff))) 
+   ((let ((connector (first wff)))
       (cond
-       ((equal +and+ connector) 
+       ((equal +and+ connector)
         (cons +and+ (simplify +and+ (mapcar #'cnf (rest wff)))))
-       ((equal +or+ connector) 
+       ((equal +or+ connector)
         (cnf (exchange-NF (cons +or+ (simplify +or+ (rest wff)))))))))))
 
 
@@ -534,7 +533,7 @@
 (cnf '(^ (v a b (^ y r s) (v k l)) c (¬ d) (^ e f (v h i) (^ o p))))
 (cnf '(^ (v a b (^ y r s)) c (¬ d) (^ e f (v h i) (^ o p))))
 (cnf '(^ (^ y r s (^ p q (v c d))) (v a b)))
-(print (cnf '(^ (v (¬ a) b c) (¬ e) r s 
+(print (cnf '(^ (v (¬ a) b c) (¬ e) r s
                 (v e f (¬ g) h) k (v m n) d)))
 ;;
 (cnf '(^ (v p (¬ q)) (v k r (^ m  n))))
@@ -553,18 +552,18 @@
 (print  (cnf '(v (v p q) e f (^ r  m) n (^ a (¬ b) c) (^ d s))))
 ;;; (^ (V P Q E F R N A D)      (V P Q E F R N A S)
 ;;;    (V P Q E F R N (¬ B) D)  (V P Q E F R N (¬ B) S)
-;;;    (V P Q E F R N C D)      (V P Q E F R N C S) 
-;;;    (V P Q E F M N A D)      (V P Q E F M N A S) 
-;;;    (V P Q E F M N (¬ B) D)  (V P Q E F M N (¬ B) S) 
+;;;    (V P Q E F R N C D)      (V P Q E F R N C S)
+;;;    (V P Q E F M N A D)      (V P Q E F M N A S)
+;;;    (V P Q E F M N (¬ B) D)  (V P Q E F M N (¬ B) S)
 ;;;    (V P Q E F M N C D)      (V P Q E F M N C S))
 ;;;
-(print 
- (cnf '(^ (^ (¬ y) (v r (^ s (¬ x)) 
+(print
+ (cnf '(^ (^ (¬ y) (v r (^ s (¬ x))
                       (^ (¬ p) m (v c d)))(v (¬ a) (¬ b))) g)))
-;;;(^ (V (¬ Y)) (V R S (¬ P)) (V R S M) 
-;;;   (V R S C D) (V R (¬ X) (¬ P)) 
+;;;(^ (V (¬ Y)) (V R S (¬ P)) (V R S M)
+;;;   (V R S C D) (V R (¬ X) (¬ P))
 ;;;   (V R (¬ X) M) (V R (¬ X) C D)
-;;;   (V (¬ A) (¬ B)) (V G))  
+;;;   (V (¬ A) (¬ B)) (V G))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.5:
@@ -609,7 +608,7 @@
 ;; evalua a lista de listas sin conectores
 ;; que representa la FNC equivalente
 ;;
-;; RECIBE   : FBF 
+;; RECIBE   : FBF
 ;; EVALUA A : FBF en FNC (con conectores ^, v eliminados)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -621,7 +620,7 @@
 
 ;;
 ;; EJEMPLOS:
-;; 
+;;
 (wff-infix-to-cnf 'a)
 (wff-infix-to-cnf '(¬ a))
 (wff-infix-to-cnf  '( (¬ p) v q v (¬ r) v (¬ s)))
@@ -630,10 +629,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.1
-;; eliminacion de literales repetidos una clausula 
-;; 
+;; eliminacion de literales repetidos una clausula
+;;
 ;; RECIBE   : K - clausula (lista de literales, disyuncion implicita)
-;; EVALUA A : clausula equivalente sin literales repetidos 
+;; EVALUA A : clausula equivalente sin literales repetidos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-repeated-literals (k)
@@ -650,12 +649,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.2
-;; eliminacion de clausulas repetidas en una FNC 
-;; 
+;; eliminacion de clausulas repetidas en una FNC
+;;
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
-;; EVALUA A : FNC equivalente sin clausulas repetidas 
+;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun eliminate-repeated-clauses (cnf) 
+(defun eliminate-repeated-clauses (cnf)
   ;;
   ;; 4.3.2 Completa el codigo
   ;;
@@ -680,7 +679,7 @@
   ;; 4.3.3 Completa el codigo
   ;;
   )
-  
+
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -703,12 +702,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.4
-;; eliminacion de clausulas subsumidas en una FNC 
-;; 
+;; eliminacion de clausulas subsumidas en una FNC
+;;
 ;; RECIBE   : K (clausula), cnf (FBF en FNC)
-;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas 
+;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun eliminate-subsumed-clauses (cnf) 
+(defun eliminate-subsumed-clauses (cnf)
   ;;
   ;; 4.3.4 Completa el codigo
   ;;
@@ -717,7 +716,7 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-(eliminate-subsumed-clauses 
+(eliminate-subsumed-clauses
  '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a)))
 ;;; ((A (¬ C) B) ((¬ A) B) (B C)) ;; el orden no es importante
 (eliminate-subsumed-clauses
@@ -735,7 +734,7 @@
 ;; EVALUA a : T si K es tautologia
 ;;            NIL en caso contrario
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun tautology-p (K) 
+(defun tautology-p (K)
   ;;
   ;; 4.3.5 Completa el codigo
   ;;
@@ -744,7 +743,7 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-(tautology-p '((¬ B) A C (¬ A) D)) ;;; T 
+(tautology-p '((¬ B) A C (¬ A) D)) ;;; T
 (tautology-p '((¬ B) A C D))       ;;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -752,9 +751,9 @@
 ;; eliminacion de clausulas en una FBF en FNC que son tautologia
 ;;
 ;; RECIBE   : cnf - FBF en FNC
-;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias 
+;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun eliminate-tautologies (cnf) 
+(defun eliminate-tautologies (cnf)
   ;;
   ;; 4.3.6 Completa el codigo
   ;;
@@ -763,7 +762,7 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-(eliminate-tautologies 
+(eliminate-tautologies
  '(((¬ b) a) (a (¬ a) b c) ( a (¬ b)) (s d (¬ s) (¬ s)) (a)))
 ;; (((¬ B) A) (A (¬ B)) (A))
 
@@ -772,18 +771,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.7
-;; simplifica FBF en FNC 
-;;        * elimina literales repetidos en cada una de las clausulas 
+;; simplifica FBF en FNC
+;;        * elimina literales repetidos en cada una de las clausulas
 ;;        * elimina clausulas repetidas
 ;;        * elimina tautologias
 ;;        * elimina clausulass subsumidas
-;;  
+;;
 ;; RECIBE   : cnf  FBF en FNC
-;; EVALUA A : FNC equivalente sin clausulas repetidas, 
+;; EVALUA A : FNC equivalente sin clausulas repetidas,
 ;;            sin literales repetidos en las clausulas
 ;;            y sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun simplify-cnf (cnf) 
+(defun simplify-cnf (cnf)
   ;;
   ;; 4.3.7 Completa el codigo
   ;;
@@ -798,14 +797,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.1
-;; Construye el conjunto de clausulas lambda-neutras para una FNC 
+;; Construye el conjunto de clausulas lambda-neutras para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FBF simplificada
 ;;            lambda - literal positivo
-;; EVALUA A : cnf_lambda^(0) subconjunto de clausulas de cnf  
-;;            que no contienen el literal lambda ni ¬lambda   
+;; EVALUA A : cnf_lambda^(0) subconjunto de clausulas de cnf
+;;            que no contienen el literal lambda ni ¬lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-neutral-clauses (lambda cnf) 
+(defun extract-neutral-clauses (lambda cnf)
   ;;
   ;; 4.4.1 Completa el codigo
   ;;
@@ -839,10 +838,10 @@
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
 ;;            lambda - literal positivo
-;; EVALUA A : cnf_lambda^(+) subconjunto de clausulas de cnf 
-;;            que contienen el literal lambda  
+;; EVALUA A : cnf_lambda^(+) subconjunto de clausulas de cnf
+;;            que contienen el literal lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-positive-clauses (lambda cnf) 
+(defun extract-positive-clauses (lambda cnf)
   ;;
   ;; 4.4.2 Completa el codigo
   ;;
@@ -870,14 +869,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.3
-;; Construye el conjunto de clausulas lambda-negativas para una FNC 
+;; Construye el conjunto de clausulas lambda-negativas para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
-;;            lambda - literal positivo 
-;; EVALUA A : cnf_lambda^(-) subconjunto de clausulas de cnf  
-;;            que contienen el literal ¬lambda  
+;;            lambda - literal positivo
+;; EVALUA A : cnf_lambda^(-) subconjunto de clausulas de cnf
+;;            que contienen el literal ¬lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-negative-clauses (lambda cnf) 
+(defun extract-negative-clauses (lambda cnf)
   ;;
   ;; 4.4.3 Completa el codigo
   ;;
@@ -907,13 +906,13 @@
 ;;
 ;; RECIBE   : lambda      - literal positivo
 ;;            K1, K2      - clausulas simplificadas
-;; EVALUA A : res_lambda(K1,K2) 
-;;                        - lista que contiene la 
-;;                          clausula que resulta de aplicar resolucion 
-;;                          sobre K1 y K2, con los literales repetidos 
+;; EVALUA A : res_lambda(K1,K2)
+;;                        - lista que contiene la
+;;                          clausula que resulta de aplicar resolucion
+;;                          sobre K1 y K2, con los literales repetidos
 ;;                          eliminados
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun resolve-on (lambda K1 K2) 
+(defun resolve-on (lambda K1 K2)
   ;;
   ;; 4.4.4 Completa el codigo
   ;;
@@ -946,11 +945,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.5
-;; Construye el conjunto de clausulas RES para una FNC 
+;; Construye el conjunto de clausulas RES para una FNC
 ;;
 ;; RECIBE   : lambda - literal positivo
 ;;            cnf    - FBF en FNC simplificada
-;;            
+;;
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun build-RES (lambda cnf)
@@ -982,13 +981,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.5
 ;; Comprueba si una FNC es SAT calculando RES para todos los
-;; atomos en la FNC 
+;; atomos en la FNC
 ;;
 ;; RECIBE   : cnf - FBF en FNC simplificada
 ;; EVALUA A :	T  si cnf es SAT
 ;;                NIL  si cnf es UNSAT
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun  RES-SAT-p (cnf) 
+(defun  RES-SAT-p (cnf)
   ;;
   ;; 4.5 Completa el codigo
   ;;
@@ -1001,16 +1000,16 @@
 ;; SAT Examples
 ;;
 (RES-SAT-p nil)  ;;; T
-(RES-SAT-p '((p) ((¬ q)))) ;;; T 
+(RES-SAT-p '((p) ((¬ q)))) ;;; T
 (RES-SAT-p
- '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T 
+ '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
 (RES-SAT-p
  '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
 ;;
 ;; UNSAT Examples
 ;;
 (RES-SAT-p '(nil))         ;;; NIL
-(RES-SAT-p '((S) nil))     ;;; NIL 
+(RES-SAT-p '((S) nil))     ;;; NIL
 (RES-SAT-p '((p) ((¬ p)))) ;;; NIL
 (RES-SAT-p
  '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
@@ -1019,11 +1018,11 @@
 ;; EJERCICIO 4.6:
 ;; Resolucion basada en RES-SAT-p
 ;;
-;; RECIBE   : wff - FBF en formato infijo 
-;;            w   - FBF en formato infijo 
-;;                               
+;; RECIBE   : wff - FBF en formato infijo
+;;            w   - FBF en formato infijo
+;;
 ;; EVALUA A : T   si w es consecuencia logica de wff
-;;            NIL en caso de que no sea consecuencia logica.  
+;;            NIL en caso de que no sea consecuencia logica.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun logical-consequence-RES-SAT-p (wff w)
   ;;
@@ -1036,8 +1035,8 @@
 ;;
 (logical-consequence-RES-SAT-p NIL 'a) ;;; NIL
 (logical-consequence-RES-SAT-p NIL NIL) ;;; NIL
-(logical-consequence-RES-SAT-p '(q ^ (¬ q)) 'a) ;;; T 
-(logical-consequence-RES-SAT-p '(q ^ (¬ q)) '(¬ a)) ;;; T 
+(logical-consequence-RES-SAT-p '(q ^ (¬ q)) 'a) ;;; T
+(logical-consequence-RES-SAT-p '(q ^ (¬ q)) '(¬ a)) ;;; T
 
 (logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) 'q)
 ;; T
@@ -1051,45 +1050,44 @@
 (logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬q))
 ;; NIL
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  '(¬ a))
 ;; T
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  'a)
 ;; T
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  'a)
 ;; NIL
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  '(¬ a))
 ;; T
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  'q)
 ;; NIL
 
-(logical-consequence-RES-SAT-p 
- '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+(logical-consequence-RES-SAT-p
+ '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
  '(¬ q))
 ;; NIL
 
-(or 
+(or
  (logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬q))      ;; NIL
- (logical-consequence-RES-SAT-p 
-  '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+ (logical-consequence-RES-SAT-p
+  '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
   'a) ;; NIL
- (logical-consequence-RES-SAT-p 
-  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+ (logical-consequence-RES-SAT-p
+  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
   'q) ;; NIL
- (logical-consequence-RES-SAT-p 
-  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 
+ (logical-consequence-RES-SAT-p
+  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
   '(¬ q)))
-
