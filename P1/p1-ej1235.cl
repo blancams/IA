@@ -381,7 +381,7 @@
       (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
 
 (defun allind (f a b N tol)
-  (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b)))
+  (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b))
 ;;;
 ;;; EJEMPLOS:
 ;;;
