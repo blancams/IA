@@ -243,28 +243,28 @@
 ;;
 ;; Encuentra una raiz de f entre los puntos a y b utilizando biseccion.
 ;;
-;; Si f(a)f(b)>=0, no hay garantia de que exista una raiz en el 
+;; Si f(a)f(b)>=0, no hay garantia de que exista una raiz en el
 ;; intervalo y la funcion devuelve NIL.
-;; 
-;; INPUT: 
+;;
+;; INPUT:
 ;;
 ;;    f: funcion real de un solo parametro con valores reales
 ;;       de la que queremos encontrar la raiz.
 ;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
 ;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
-;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion
 ;;         devuelve (a+b)/2 como solucion.
-;; 
-;; OUTPUT: 
+;;
+;; OUTPUT:
 ;;
 ;;    raiz de la funcion, o NIL si no se ha encontrado ninguna.
 ;;
 (defun bisect (f a b tol)
   (let ((pto-medio (/ (+ a b) 2)))
-    (unless (>= (* (funcall f a) (funcall f b)) 0) 
-      (if (< (- b a) tol) 
+    (unless (>= (* (funcall f a) (funcall f b)) 0)
+      (if (< (- b a) tol)
           pto-medio
-        (if (>= (* (funcall f a) (funcall f pto-medio)) 0) 
+        (if (>= (* (funcall f a) (funcall f pto-medio)) 0)
             (bisect f pto-medio b tol)
           (bisect f a pto-medio tol))))))
 ;;
@@ -280,20 +280,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean (lst)
 ;;
-;; Funcion no destructiva que devuelve una lista vacia si todos 
+;; Funcion no destructiva que devuelve una lista vacia si todos
 ;; los elementos de lst son NIL.
-;; 
-;; INPUT: 
+;;
+;; INPUT:
 ;;
 ;;    lst: lista que se quiere evaluar.
-;; 
-;; OUTPUT: 
+;;
+;; OUTPUT:
 ;;
 ;;    NIL si todos los elementos de lst son NIL;
 ;;    lst en caso contrario.
 ;;
 (defun clean (lst)
-  (unless (every #'null lst) 
+  (unless (every #'null lst)
     lst))
 ;;
 ;; EJEMPLOS:
@@ -320,17 +320,17 @@
 ;;    f: funcion real de un solo parametro con valores reales
 ;;       de la que queremos encontrar la raiz.
 ;;    lst: lista ordenada de valores reales (lst[i] < lst[i+1]).
-;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion
 ;;         devuelve (a+b)/2 como solucion.
 ;;
-;; OUTPUT: 
+;; OUTPUT:
 ;;
 ;;    Una lista de valores reales conteniendo las raices de la
 ;;    funcion en los sub-intervalos dados.
 ;;
 (defun allroot-aux (f lst tol)
   (unless (and (null (rest lst)) (not (null (first lst))))
-    (cons (bisect f (first lst) (second lst) tol) 
+    (cons (bisect f (first lst) (second lst) tol)
           (allroot-aux f (rest lst) tol))))
 
 (defun allroot (f lst tol)
@@ -339,7 +339,7 @@
 ;; EJEMPLOS:
 ;;
 ;; (allroot #'(lambda(x) (sin (* 6.28 x))) '(0.1 2.25) 0.0001) ;-> NIL
-;; (allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75 1.25 1.75 2.25) 0.0001) 
+;; (allroot #'(lambda(x) (sin (* 6.28 x))) '(0.25 0.75 1.25 1.75 2.25) 0.0001)
 ;; ;-> (0.50027466 1.0005188 1.5007629 2.001007)
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -351,8 +351,8 @@
 ;;;
 ;;; Divide un intervalo en cierto numero de sub-intervalos y encuentra
 ;;; todas las raices de la funcion f en los mismos.
-;;; 
-;;; El intervalo [a,b] es dividido en intervalos [x[i],x[i+1]] con 
+;;;
+;;; El intervalo [a,b] es dividido en intervalos [x[i],x[i+1]] con
 ;;; x[i] = a + i*dlt; en cada intervalo se busca una raiz, y todas
 ;;; las raices encontradas son devueltas en una lista.
 ;;;
@@ -362,22 +362,18 @@
 ;;;       de la que queremos encontrar la raiz.
 ;;;    a: limite inferior del intervalo en el que queremos buscar la raiz.
 ;;;    b: b>a limite superior del intervalo en el que queremos buscar la raiz.
-;;;    N: Exponente del numero de intervalos en el que se divide [a,b]: 
+;;;    N: Exponente del numero de intervalos en el que se divide [a,b]:
 ;;;       [a,b] se divide en 2^N intervalos
-;;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion 
+;;;    tol: tolerancia para el criterio de parada: si b-a < tol la funcion
 ;;;         devuelve (a+b)/2 como solucion.
 ;;;
-;;; OUTPUT: 
-;;;    
+;;; OUTPUT:
+;;;
 ;;;    Lista con todas las raices encontradas.
-;;; 
+;;;
 (defun allind-aux (f x incr tol max)
-  ;(coerce x 'double-float) (print x)
-  ;(coerce incr 'double-float)
   (let ((y (+ x incr)))
     (unless (> y max)
-      ;(print y)
-      ;(format t "~,7f" (float b))
       (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
 
 (defun allind (f a b N tol)
@@ -408,7 +404,7 @@
 ;;;
 (defun combine-elt-lst (elt lst)
   (unless (null lst)
-    (cons (list elt (first lst)) 
+    (cons (list elt (first lst))
           (combine-elt-lst elt (rest lst)))))
 ;;;
 ;;; EJEMPLOS:
