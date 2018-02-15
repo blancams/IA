@@ -40,14 +40,14 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun positive-literal-p (x)
-  ;;
-  ;; 4.1.1 Completa el codigo
-  ;;
-  )
+   (not (or (truth-value-p x) 
+   			(connector-p x) 
+   			(listp x))))
+   
 
 ;; EJEMPLOS:
 (positive-literal-p 'p)
-;; evalua a T
+; evalua a T
 (positive-literal-p T)
 (positive-literal-p NIL)
 (positive-literal-p '¬)
@@ -55,7 +55,7 @@
 (positive-literal-p '(p))
 (positive-literal-p '(¬ p))
 (positive-literal-p '(¬ (v p q)))
-;; evaluan a NIL
+; evaluan a NIL
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,10 +68,9 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun negative-literal-p (x)
-  ;;
-  ;; 4.1.2 Completa el codigo
-  ;;
-  )
+  (unless (positive-literal-p x)
+  	(when (listp x)
+      (positive-literal-p (second x)))))
 
 ;; EJEMPLOS:
 (negative-literal-p '(¬ p))        ; T
@@ -97,10 +96,13 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun literal-p (x) 
-  ;;
-  ;; 4.1.3 Completa el codigo
-  ;;
-  )
+   	(if (and (listp x) 
+   		     (not (null (first x))) 
+   		     (null (rest (rest x))))
+	  (and (unary-connector-p (first x)) 
+	       (positive-literal-p (first (rest x))))
+      (positive-literal-p x)))
+		
 
 ;; EJEMPLOS:
 (literal-p 'p)             
@@ -165,10 +167,29 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-p (x)
-  ;;
-  ;; 4.1.4 Completa el codigo
-  ;;
-  ) 
+  (unless (null x)             
+    (or (literal-p x)          
+        (and (listp x)
+        	 (let ((op1 (first x))
+        		   (conector (first (rest x)))
+            	   (op2 (rest (rest x))))          
+             (cond
+            	((unary-connector-p op1)	 			;; Un poco confusa en este caso la notacion
+             		(and (null op2)      
+                  	     (wff-infix-p conector))) 
+            	((binary-connector-p conector) 
+               		(and (null (rest op2))    
+                         (wff-infix-p (first x))
+                         (wff-infix-p (first op2)))) 
+            	((n-ary-connector-p conector)
+            		(let ((tmp (first (rest op2))))
+            		(when (or (eql conector tmp) (null tmp))  
+                 		(and (wff-infix-p op1)        
+                             (wff-infix-p (first op2))))))
+            	((n-ary-connector-p op1)
+            		(null (rest x)))
+            	(t NIL)))))))                 
+
 
 ;;
 ;; EJEMPLOS:
@@ -525,7 +546,7 @@
 
 (cnf 'a)
 
-(cnf '(v (¬ a) b c))
+;;(cnf '(v (¬ a) b c))
 (print (cnf '(^ (v (¬ a) b c) (¬ e) (^ e f (¬ g) h) (v m n) (^ r s q) (v u q) (^ x y))))
 (print (cnf '(v (^ (¬ a) b c) (¬ e) (^ e f (¬ g) h) (v m n) (^ r s q) (v u q) (^ x y))))
 (print (cnf '(^ (v p  (¬ q)) a (v k  r  (^ m  n)))))
