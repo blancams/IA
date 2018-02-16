@@ -67,17 +67,11 @@
 ;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun negative-literal-p (x)
-<<<<<<< HEAD
-  (unless (positive-literal-p x)
-  	(when (listp x)
-      (positive-literal-p (second x)))))
-=======
   (unless (or (atom x)
               (not (and (unary-connector-p (first x))
                         (positive-literal-p (second x))
                         (null (third x)))))
     t))
->>>>>>> c15959bd383331b71613a5550e847e701b82a690
 
 ;; EJEMPLOS:
 (negative-literal-p '(¬ p))        ; T
