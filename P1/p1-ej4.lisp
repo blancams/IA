@@ -329,10 +329,12 @@
 ;; EVALUA A : T si FBF es una clausula, NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun clause-p (wff)
-  ;;
-  ;; 4.1.6 Completa el codigo
-  ;;
-  )
+  (and (listp wff)
+       (eql (first wff) +or+)
+       (every #'identity
+              (mapcar #'(lambda (lit)
+                          (literal-p lit))
+                (rest wff)))))
 
 ;;
 ;; EJEMPLOS:
@@ -433,10 +435,17 @@
 ;;            sin el connector =>
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-conditional (wff)
-  ;;
-  ;; 4.2.2 Completa el codigo
-  ;;
-  )
+  (if (or (null wff) (literal-p wff))
+      wff
+    (let ((connector (first wff)))
+      (if (eq connector +cond+)
+          (let ((wff1 (eliminate-conditional (second wff)))
+                (wff2 (eliminate-conditional (third  wff))))
+            (list +or+
+                  (list +not+ wff1)
+                  wff2))
+        (cons connector
+              (mapcar #'eliminate-conditional (rest wff)))))))
 
 ;;
 ;; EJEMPLOS:
