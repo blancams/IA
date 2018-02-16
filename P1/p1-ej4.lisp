@@ -40,17 +40,9 @@
 ;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun positive-literal-p (x)
-<<<<<<< HEAD
-   (not (or (truth-value-p x) 
-   			(connector-p x) 
+   (not (or (truth-value-p x)
+   			(connector-p x)
    			(listp x))))
-   
-=======
-  (unless (or (not (atom x))
-              (connector-p x)
-              (truth-value-p x))
-    t))
->>>>>>> c15959bd383331b71613a5550e847e701b82a690
 
 ;; EJEMPLOS:
 (positive-literal-p 'p)
@@ -177,28 +169,28 @@
 ;;            NIL en caso contrario.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-p (x)
-  (unless (null x)             
-    (or (literal-p x)          
+  (unless (null x)
+    (or (literal-p x)
         (and (listp x)
         	 (let ((op1 (first x))
         		   (conector (first (rest x)))
-            	   (op2 (rest (rest x))))          
+            	   (op2 (rest (rest x))))
              (cond
             	((unary-connector-p op1)	 			;; Un poco confusa en este caso la notacion
-             		(and (null op2)      
-                  	     (wff-infix-p conector))) 
-            	((binary-connector-p conector) 
-               		(and (null (rest op2))    
+             		(and (null op2)
+                  	     (wff-infix-p conector)))
+            	((binary-connector-p conector)
+               		(and (null (rest op2))
                          (wff-infix-p (first x))
-                         (wff-infix-p (first op2)))) 
+                         (wff-infix-p (first op2))))
             	((n-ary-connector-p conector)
             		(let ((tmp (first (rest op2))))
-            		(when (or (eql conector tmp) (null tmp))  
-                 		(and (wff-infix-p op1)        
+            		(when (or (eql conector tmp) (null tmp))
+                 		(and (wff-infix-p op1)
                              (wff-infix-p (first op2))))))
             	((n-ary-connector-p op1)
             		(null (rest x)))
-            	(t NIL)))))))                 
+            	(t NIL)))))))
 
 ;;
 ;; EJEMPLOS:
