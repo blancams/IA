@@ -701,14 +701,10 @@
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-repeated-clauses (cnf)
-  (unless (null cnf)
-    (let* ((n_cnf (mapcar #'eliminate-repeated-literals cnf))
-    	   (elt   (first n_cnf))
-    	   (resto (rest n_cnf)))
-    (if (some #'(lambda(x) (eql x (length elt))) (mapcar #'(lambda(x) (length (eliminate-repeated-literals (append x elt)))) resto))
-      (eliminate-repeated-clauses resto)
-      (cons elt
-      	    (eliminate-repeated-clauses resto))))))
+  ;;
+  ;; 4.3.2 Completa el codigo
+  ;;
+  )  
 
 ;;
 ;; EJEMPLO:
