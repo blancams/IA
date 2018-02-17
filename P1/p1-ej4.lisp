@@ -701,10 +701,8 @@
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-repeated-clauses (cnf)
-  ;;
-  ;; 4.3.2 Completa el codigo
-  ;;
-  )  
+
+)
 
 ;;
 ;; EJEMPLO:
@@ -763,11 +761,9 @@
 ;; RECIBE   : K (clausula), cnf (FBF en FNC)
 ;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun eliminate-subsumed-clauses (cnf)
-  ;;
-  ;; 4.3.4 Completa el codigo
-  ;;
-  )
+)
 
 ;;
 ;;  EJEMPLOS:
@@ -813,9 +809,6 @@
 ;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-tautologies (cnf)
-  ;;
-  ;; 4.3.6 Completa el codigo
-  ;;
   )
 
 ;;
@@ -842,15 +835,13 @@
 ;;            y sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun simplify-cnf (cnf)
-  ;;
-  ;; 4.3.7 Completa el codigo
-  ;;
-  )
+  (unless (null cnf) 
+  	(eliminate-subsumed-clauses (eliminate-repeated-clauses (eliminate-tautologies cnf)))))
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(simplify-cnf '((a a) (b) (a) ((¬ b)) ((¬ b)) (a b c a)  (s s d) (b b c a b)))
+(simplify-cnf '((a a) (b) (a) ((¬ b)) ((¬ b)) (a b c a) (s s d) (b b c a b)))
 ;; ((B) ((¬ B)) (S D) (A)) ;; en cualquier orden
 
 
@@ -863,17 +854,20 @@
 ;; EVALUA A : cnf_lambda^(0) subconjunto de clausulas de cnf
 ;;            que no contienen el literal lambda ni ¬lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-neutral-clauses (lambda cnf)
-  ;;
-  ;; 4.4.1 Completa el codigo
-  ;;
-  )
+(defun extract-neutral-clauses (elt cnf)
+  (unless (null cnf)
+  	(if (some #'(lambda(x) (if (positive-literal-p x) 
+  		                     (equal x elt)
+  		                     (equal (second x) elt)))
+  	      (first cnf))
+  	  (extract-neutral-clauses elt (rest cnf))
+  	  (cons (first cnf)
+  	  	    (extract-neutral-clauses elt (rest cnf))))))
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(extract-neutral-clauses 'p
-                           '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-neutral-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ((R (¬ S) Q) ((¬ R) S))
 
 
@@ -883,12 +877,10 @@
 (extract-neutral-clauses 'r '(NIL))
 ;; (NIL)
 
-(extract-neutral-clauses 'r
-                           '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-neutral-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ((P Q) (A B P) (A (¬ P) C))
 
-(extract-neutral-clauses 'p
-                           '((p (¬ q) r) (p q) (r (¬ s) p q) (a b p) (a (¬ p) c) ((¬ r) p s)))
+(extract-neutral-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) p q) (a b p) (a (¬ p) c) ((¬ r) p s)))
 ;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -900,17 +892,13 @@
 ;; EVALUA A : cnf_lambda^(+) subconjunto de clausulas de cnf
 ;;            que contienen el literal lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-positive-clauses (lambda cnf)
-  ;;
-  ;; 4.4.2 Completa el codigo
-  ;;
+(defun extract-positive-clauses (elt cnf)
   )
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(extract-positive-clauses 'p
-                             '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-positive-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 
 ;; ((P (¬ Q) R) (P Q) (A B P))
 
@@ -919,11 +907,9 @@
 ;; NIL
 (extract-positive-clauses 'r '(NIL))
 ;; NIL
-(extract-positive-clauses 'r
-                             '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-positive-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ((P (¬ Q) R) (R (¬ S) Q))
-(extract-positive-clauses 'p
-                             '(((¬ p) (¬ q) r) ((¬ p) q) (r (¬ s) (¬ p) q) (a b (¬ p)) ((¬ r) (¬ p) s)))
+(extract-positive-clauses 'p '(((¬ p) (¬ q) r) ((¬ p) q) (r (¬ s) (¬ p) q) (a b (¬ p)) ((¬ r) (¬ p) s)))
 ;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -935,28 +921,27 @@
 ;; EVALUA A : cnf_lambda^(-) subconjunto de clausulas de cnf
 ;;            que contienen el literal ¬lambda
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extract-negative-clauses (lambda cnf)
-  ;;
-  ;; 4.4.3 Completa el codigo
-  ;;
-  )
+(defun extract-negative-clauses (elt cnf)
+  (unless (null cnf)
+  	(if (some #'(lambda(x) (and (negative-literal-p x) (equal (second x) elt)))
+  	      (first cnf))
+  	  (cons (first cnf)
+  	  	    (extract-negative-clauses elt (rest cnf)))
+  	  (extract-negative-clauses elt (rest cnf)))))
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(extract-negative-clauses 'p
-                             '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-negative-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ((A (¬ P) C))
 
 (extract-negative-clauses 'r NIL)
 ;; NIL
 (extract-negative-clauses 'r '(NIL))
 ;; NIL
-(extract-negative-clauses 'r
-                             '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+(extract-negative-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; (((¬ R) S))
-(extract-negative-clauses 'p
-                             '(( p (¬ q) r) ( p q) (r (¬ s) p q) (a b p) ((¬ r) p s)))
+(extract-negative-clauses 'p '(( p (¬ q) r) ( p q) (r (¬ s) p q) (a b p) ((¬ r) p s)))
 ;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -971,11 +956,9 @@
 ;;                          sobre K1 y K2, con los literales repetidos
 ;;                          eliminados
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun resolve-on (lambda K1 K2)
-  ;;
-  ;; 4.4.4 Completa el codigo
-  ;;
-  )
+(defun resolve-on (elt k1 k2)
+  ) 
+      	                             
 
 ;;
 ;;  EJEMPLOS:
@@ -1012,9 +995,7 @@
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun build-RES (lambda cnf)
-  ;;
-  ;; 4.4.5 Completa el codigo
-  ;;
+
 )
 
 ;;
