@@ -506,18 +506,19 @@
 ;;
 (defun reduce-scope-of-negation (wff)
   (unless (null wff)
-  	(if (equal +not+ (first wff))
-   	  (cond 
-		    ((negative-literal-p wff) wff) ;Caso base
-  	  	((negative-literal-p (second wff)) (second (second wff))) ;Caso doble negacion
-  	    (t 
-  	      (let ((resto (rest wff)))
-  	      (append (mapcar #'(lambda(x) (if (n-ary-connector-p x)
-  	    		                         (exchange-and-or x)
-  	    		                         (reduce-scope-of-negation (list +not+ x))))
-  	                (first resto))
-  	              (reduce-scope-of-negation (rest resto))))))
-  	(reduce-scope-of-negation (rest wff)))))
+    (if (literal-p wff)
+      wff
+  	  (if (equal +not+ (first wff))
+   	    (cond
+  	  	  ((negative-literal-p (second wff)) (second (second wff))) ;Caso doble negacion
+  	      (t 
+  	        (let ((resto (rest wff)))
+  	        (append (mapcar #'(lambda(x) (if (n-ary-connector-p x)
+  	    		                               (exchange-and-or x)
+  	    		                               (reduce-scope-of-negation (list +not+ x))))
+  	                  (first resto))
+  	                (reduce-scope-of-negation (rest resto))))))
+  	 (mapcar #'reduce-scope-of-negation (rest wff))))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -741,11 +742,11 @@
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;
 (defun eliminate-repeated-clauses (cnf)
-(unless (null cnf)
+  (unless (null cnf)
     (let* ((n_cnf (mapcar #'eliminate-repeated-literals cnf))
-    	   (elt   (first n_cnf))
-    	   (resto (rest n_cnf))
-         (eliminar-sig (eliminate-repeated-clauses resto)))
+    	     (elt   (first n_cnf))
+    	     (resto (rest n_cnf))
+           (eliminar-sig (eliminate-repeated-clauses resto)))
     (if (some #'(lambda(x) (eql x (length elt))) 
           (mapcar #'(lambda(x) (length (eliminate-repeated-literals (append x elt)))) resto))
       eliminar-sig
@@ -1047,48 +1048,35 @@
     (usefull (list +not+ elt) k2)
   (and (usefull (list +not+ elt) k1) (usefull elt k2))))
 
-(defun auxiliar (k)
-  (unless (null k)
-    (let* ((primero     (first k))
-           (neg-prim    (reduce-scope-of-negation (list +not+ primero)))
-           (resto       (rest k)))
-    (if (some #'(lambda(x) (equal x neg-prim))
-          resto)
-      (auxiliar (remove neg-prim resto :test #'equal))
-      (cons primero (auxiliar resto))))))
+(defun auxiliar (elt k)
+    (remove (reduce-scope-of-negation (list +not+ elt)) 
+      (remove elt (copy-list k) :test #'equal) :test #'equal))
 
 (defun resolve-on (elt k1 k2)
   (unless (or (null k1) (null k2))
     (when (possible elt k1 k2)
-      (eliminate-repeated-literals
-        (auxiliar (append k1 k2))))))
-    
-      	                             
-
+      (list (eliminate-repeated-literals
+        (auxiliar elt (append k1 k2)))))))
 ;;
 ;;  EJEMPLOS:
 ;;
-(resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s))
-;; (((¬ C) B A Q R S))
+;; (resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s))
+;; ;-> (((¬ C) B A Q R S))
+;; (resolve-on 'p '(a b (¬ c) (¬ p)) '( p b a q r s))
+;; ;-> (((¬ C) B A Q R S))
+;; (resolve-on 'p '(p) '((¬ p)))
+;; ;-> (NIL)
+;; (resolve-on 'p NIL '(p b a q r s))
+;; ;-> NIL
+;; (resolve-on 'p NIL NIL)
+;; ;-> NIL
+;; (resolve-on 'p '(a b (¬ c) (¬ p)) '(p b a q r s))
+;; ;-> (((¬ C) B A Q R S))
+;; (resolve-on 'p '(a b (¬ c)) '(p b a q r s))
+;; ;-> NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(resolve-on 'p '(a b (¬ c) (¬ p)) '( p b a q r s))
-;; (((¬ C) B A Q R S))
 
-(resolve-on 'p '(p) '((¬ p)))
-;; (NIL)
-
-
-(resolve-on 'p NIL '(p b a q r s))
-;; NIL
-
-(resolve-on 'p NIL NIL)
-;; NIL
-
-(resolve-on 'p '(a b (¬ c) (¬ p)) '(p b a q r s))
-;; (((¬ C) B A Q R S))
-
-(resolve-on 'p '(a b (¬ c)) '(p b a q r s))
-;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.5
@@ -1100,9 +1088,16 @@
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun build-RES-aux (elt positivas negativas)
+  (unless (or (null positivas) (null negativas))
+    (append (mapcan #'(lambda(x) (resolve-on elt (first negativas) x)) positivas)
+            (build-RES-aux elt (rest negativas) positivas))))
 
 (defun build-RES (elt cnf)
-  )
+  (unless (null cnf)
+      (append (extract-neutral-clauses elt cnf)
+              (build-RES-aux elt (extract-positive-clauses elt cnf) (extract-negative-clauses elt cnf)))))  
+
 
 ;;
 ;;  EJEMPLOS:
