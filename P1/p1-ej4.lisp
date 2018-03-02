@@ -694,9 +694,7 @@
 ;; EVALUA A : FBF en FNC (con conectores ^, v eliminados)
 ;;
 (defun wff-infix-to-cnf (wff)
-  ;;
-  ;; 4.2.6 Completa el codigo
-  ;;
+
   )
 
 ;;
@@ -1040,8 +1038,31 @@
 ;;                          sobre K1 y K2, con los literales repetidos
 ;;                          eliminados
 ;;
+(defun usefull (elt k)
+  (some #'(lambda(x) (equal x elt))
+    k))
+
+(defun possible (elt k1 k2)
+  (if (usefull elt k1)
+    (usefull (list +not+ elt) k2)
+  (and (usefull (list +not+ elt) k1) (usefull elt k2))))
+
+(defun auxiliar (k)
+  (unless (null k)
+    (let* ((primero     (first k))
+           (neg-prim    (reduce-scope-of-negation (list +not+ primero)))
+           (resto       (rest k)))
+    (if (some #'(lambda(x) (equal x neg-prim))
+          resto)
+      (auxiliar (remove neg-prim resto :test #'equal))
+      (cons primero (auxiliar resto))))))
+
 (defun resolve-on (elt k1 k2)
-  )
+  (unless (or (null k1) (null k2))
+    (when (possible elt k1 k2)
+      (eliminate-repeated-literals
+        (auxiliar (append k1 k2))))))
+    
       	                             
 
 ;;
