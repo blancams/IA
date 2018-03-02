@@ -739,14 +739,22 @@
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;
+(defun test-clauses (k1 k2)
+  (if (null k1)
+    t
+    (let ((primero (first k1)))
+      (if (some #'(lambda(x) (equal x primero)) k2)
+        (if (some #'(lambda(x) (equal x primero)) (remove primero (copy-list k2) :test #'equal))
+          NIL
+          (and t (test-clauses (rest k1) k2)))
+        NIL))))
+
 (defun eliminate-repeated-clauses (cnf)
   (unless (null cnf)
-    (let* ((n_cnf (mapcar #'eliminate-repeated-literals cnf))
-      	   (elt   (first n_cnf))
-    	     (resto (rest n_cnf))
-           (eliminar-sig (eliminate-repeated-clauses resto)))
-    (if (some #'(lambda(x) (eql x (length elt)))
-          (mapcar #'(lambda(x) (length (eliminate-repeated-literals (append x elt)))) resto))
+    (let* ((elt   (eliminate-repeated-literals (first cnf)))
+    	    (resto (rest cnf))
+          (eliminar-sig (eliminate-repeated-clauses resto)))
+    (if (some #'(lambda(x) (and (test-clauses elt x) (test-clauses x elt))) resto)
       eliminar-sig
       (cons elt
       	    eliminar-sig)))))
@@ -952,6 +960,9 @@
 ;; ;-> ((P Q) (A B P) (A (¬ P) C))
 ;; (extract-neutral-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) p q) (a b p) (a (¬ p) c) ((¬ r) p s)))
 ;; -> NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.2
@@ -1011,7 +1022,7 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-;; (extract-negative-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
+;; (extract-negative-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) qz) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ;-> ((A (¬ P) C))
 ;; (extract-negative-clauses 'r NIL)
 ;; ;-> NIL
@@ -1084,8 +1095,7 @@
 ;;            cnf    - FBF en FNC simplificada
 ;;
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;
 (defun build-RES-aux (elt positivas negativas)
   (unless (or (null positivas) (null negativas))
     (append (mapcan #'(lambda(x) (resolve-on elt (first negativas) x)) positivas)
@@ -1099,22 +1109,23 @@
 ;;
 ;;  EJEMPLOS:
 ;;
- (build-RES 'p NIL)
-;; NIL
- (build-RES 'P '((A  (¬ P) B) (A P) (A B)));; ((A B))
- (build-RES 'P '((B  (¬ P) A) (A P) (A B)));; ((B A))
+;; (build-RES 'p NIL)
+;; ;-> NIL
+;; (build-RES 'P '((A  (¬ P) B) (A P) (A B))) 
+;; ;-> ((A B))
+;; (build-RES 'P '((B  (¬ P) A) (A P) (A B))) 
+;; ;-> ((B A))
+;; (build-RES 'p '(NIL))
+;; ;-> (NIL)
+;; (build-RES 'p '((p) ((¬ p))))
+;; ;-> (NIL)
+;; (build-RES 'q '((p q) ((¬ p) q) (a b q) (p (¬ q)) ((¬ p) (¬ q))))
+;; ;-> ((P) ((¬ P) P) ((¬ P)) (B A P) (B A (¬ P)))
+;; (build-RES 'p '((p q) (c q) (a b q) (p (¬ q)) (p (¬ q))))
+;; ;-> ((A B Q) (C Q))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
- (build-RES 'p '(NIL))
-;; (NIL)
 
- (build-RES 'p '((p) ((¬ p))))
-;; (NIL)
-
- (build-RES 'q '((p q) ((¬ p) q) (a b q) (p (¬ q)) ((¬ p) (¬ q))))
-;; ((P) ((¬ P) P) ((¬ P)) (B A P) (B A (¬ P)))
-
- (build-RES 'p '((p q) (c q) (a b q) (p (¬ q)) (p (¬ q))))
-;; ((A B Q) (C Q))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.5
@@ -1137,19 +1148,18 @@
                 next-it))))
 
 (defun extract-positive-literals-cnf (cnf)
-    (mapcan #'(lambda(x) (extract-positive-literals-clause x)) cnf))
+    (eliminate-repeated-literals (mapcan #'(lambda(x) (extract-positive-literals-clause x)) cnf)))
 
 (defun RES-SAT-aux (pos-literals cnf)
     (cond
-        ((null cnf) NIL)
-        ((null pos-literals) (list NIL))
-        (t (RES-SAT-aux (rest pos-literals) (simplify-cnf (build-RES (first pos-literals) cnf))))))
+      ((null cnf) NIL)
+      ((null pos-literals) (list NIL))
+      (t (RES-SAT-aux (rest pos-literals) (simplify-cnf (build-RES (first pos-literals) cnf))))))
 
 
 (defun  RES-SAT-p (cnf)
-    (unless (equal (RES-SAT-aux (extract-positive-literals-cnf cnf) cnf) '(NIL))
-        t))
-
+   (unless (equal (RES-SAT-aux (extract-positive-literals-cnf cnf) cnf) '(NIL))
+      t))
 
 ;;
 ;;  EJEMPLOS:
@@ -1157,20 +1167,17 @@
 ;;
 ;; SAT Examples
 ;;
-;;(RES-SAT-p nil)  ;;; T
-;;(RES-SAT-p '((p) ((¬ q)))) ;;; T
-;;(RES-SAT-p
-;; '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
-;;(RES-SAT-p
-;; '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
+;; (RES-SAT-p nil)  ;;; T
+;; (RES-SAT-p '((p) ((¬ q)))) ;;; T
+;; (RES-SAT-p '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
+;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
 ;;
 ;; UNSAT Examples
 ;;
-;;(RES-SAT-p '(nil))         ;;; NIL
-;;(RES-SAT-p '((S) nil))     ;;; NIL
-;;(RES-SAT-p '((p) ((¬ p)))) ;;; NIL
-;;(RES-SAT-p
-;; '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
+;; (RES-SAT-p '(nil))         ;;; NIL
+;; (RES-SAT-p '((S) nil))     ;;; NIL
+;; (RES-SAT-p '((p) ((¬ p)))) ;;; NIL
+;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.6:
@@ -1182,11 +1189,16 @@
 ;; EVALUA A : T   si w es consecuencia logica de wff
 ;;            NIL en caso de que no sea consecuencia logica.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; necesito que funcione el anterior y ademas es que estoy cansada asi que luego sigo
+
+(defun  )
+
+
 (defun logical-consequence-RES-SAT-p (wff w)
-  ;;
-  ;; 4.6 Completa el codigo
-  ;;
-  )
+  (unless (or (null wff) (null w))
+    (append (cnf wff)
+            (reduce-scope-of-negation (cnf w)))))
 
 ;;
 ;;  EJEMPLOS:
