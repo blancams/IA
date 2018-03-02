@@ -1198,7 +1198,7 @@
 (defun logical-consequence-RES-SAT-p (wff w)
   (unless (or (null wff) (null w))
     (append (cnf wff)
-            (reduce-scope-of-negation (list +not+ w)))))
+            (reduce-scope-of-negation (list +not+ (cnf w))))))
 
 ;;
 ;;  EJEMPLOS:
