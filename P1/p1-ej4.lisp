@@ -1097,12 +1097,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; NO FUNCIONA TODAVIA PORQUE HAY CASOS DEL RESOLVE-ON QUE NO FUNCIONAN
-;; TAMBIEN FALTA ELIMINAR CLAUSULAS REPETIDAS
 (defun build-RES-aux (elt pos-clause neg-clause-lst)
     (mapcar #'(lambda(x) (resolve-on elt pos-clause x)) neg-clause-lst))
 
 (defun build-RES (elt cnf)
-    (mapcan #'(lambda(x) (build-RES-aux elt x (extract-negative-clauses elt cnf))) (extract-positive-clauses elt cnf)))
+    (eliminate-repeated-clauses (mapcan #'(lambda(x) (build-RES-aux elt x (extract-negative-clauses elt cnf))) (extract-positive-clauses elt cnf))))
 
 
 ;;
