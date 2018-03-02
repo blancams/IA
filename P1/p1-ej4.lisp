@@ -1096,28 +1096,33 @@
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; NO FUNCIONA TODAVIA PORQUE HAY CASOS DEL RESOLVE-ON QUE NO FUNCIONAN
+;; TAMBIEN FALTA ELIMINAR CLAUSULAS REPETIDAS
+(defun build-RES-aux (elt pos-clause neg-clause-lst)
+    (mapcar #'(lambda(x) (resolve-on elt pos-clause x)) neg-clause-lst))
 
 (defun build-RES (elt cnf)
-  )
+    (mapcan #'(lambda(x) (build-RES-aux elt x (extract-negative-clauses elt cnf))) (extract-positive-clauses elt cnf)))
+
 
 ;;
 ;;  EJEMPLOS:
 ;;
-(build-RES 'p NIL)
+;; (build-RES 'p NIL)
 ;; NIL
-(build-RES 'P '((A  (¬ P) B) (A P) (A B)));; ((A B))
-(build-RES 'P '((B  (¬ P) A) (A P) (A B)));; ((B A))
+;; (build-RES 'P '((A  (¬ P) B) (A P) (A B)));; ((A B))
+;; (build-RES 'P '((B  (¬ P) A) (A P) (A B)));; ((B A))
 
-(build-RES 'p '(NIL))
+;; (build-RES 'p '(NIL))
 ;; (NIL)
 
-(build-RES 'p '((p) ((¬ p))))
+;; (build-RES 'p '((p) ((¬ p))))
 ;; (NIL)
 
-(build-RES 'q '((p q) ((¬ p) q) (a b q) (p (¬ q)) ((¬ p) (¬ q))))
+;; (build-RES 'q '((p q) ((¬ p) q) (a b q) (p (¬ q)) ((¬ p) (¬ q))))
 ;; ((P) ((¬ P) P) ((¬ P)) (B A P) (B A (¬ P)))
 
-(build-RES 'p '((p q) (c q) (a b q) (p (¬ q)) (p (¬ q))))
+;; (build-RES 'p '((p q) (c q) (a b q) (p (¬ q)) (p (¬ q))))
 ;; ((A B Q) (C Q))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
