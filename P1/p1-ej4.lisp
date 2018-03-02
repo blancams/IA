@@ -1133,11 +1133,31 @@
 ;; EVALUA A :	T  si cnf es SAT
 ;;                NIL  si cnf es UNSAT
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NO ESTA PROBADO SI FUNCIONA (DEPENDE TAMBIEN DE QUE FUNCIONE BUILD-RES)
+(defun extract-positive-literals-clause (clause)
+    (if (null clause)
+        nil
+        (let ((first-literal (first clause))
+              (next-it (extract-positive-literals-clause (rest clause))))
+            (if (positive-literal-p first-literal)
+                (cons first-literal next-it)
+                next-it))))
+
+(defun extract-positive-literals-cnf (cnf)
+    (mapcan #'(lambda(x) (extract-positive-literals-clause x)) cnf))
+
+(defun RES-SAT-aux (pos-literals cnf)
+    (cond
+        ((null cnf) NIL)
+        ((null pos-literals) (list NIL))
+        (t (RES-SAT-aux (rest pos-literals) (simplify-cnf (build-RES (first pos-literals) cnf))))))
+
+
 (defun  RES-SAT-p (cnf)
-  ;;
-  ;; 4.5 Completa el codigo
-  ;;
-  )
+    (unless (equal (RES-SAT-aux (extract-positive-literals-cnf cnf) cnf) '(NIL))
+        t))
+
 
 ;;
 ;;  EJEMPLOS:
@@ -1145,20 +1165,20 @@
 ;;
 ;; SAT Examples
 ;;
-(RES-SAT-p nil)  ;;; T
-(RES-SAT-p '((p) ((¬ q)))) ;;; T
-(RES-SAT-p
- '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
-(RES-SAT-p
- '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
+;;(RES-SAT-p nil)  ;;; T
+;;(RES-SAT-p '((p) ((¬ q)))) ;;; T
+;;(RES-SAT-p
+;; '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
+;;(RES-SAT-p
+;; '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
 ;;
 ;; UNSAT Examples
 ;;
-(RES-SAT-p '(nil))         ;;; NIL
-(RES-SAT-p '((S) nil))     ;;; NIL
-(RES-SAT-p '((p) ((¬ p)))) ;;; NIL
-(RES-SAT-p
- '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
+;;(RES-SAT-p '(nil))         ;;; NIL
+;;(RES-SAT-p '((S) nil))     ;;; NIL
+;;(RES-SAT-p '((p) ((¬ p)))) ;;; NIL
+;;(RES-SAT-p
+;; '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.6:
