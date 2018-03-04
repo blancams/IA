@@ -31,6 +31,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 4.1.2
 ;; positive-literal-p
 ;;
 ;; Predicado para determinar si una expresion en LISP
@@ -63,6 +64,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.2
+;; negative-literal-p
+;;
 ;; Predicado para determinar si una expresion
 ;; es un literal negativo
 ;;
@@ -96,6 +99,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.3
+;; literal-p
+;;
 ;; Predicado para determinar si una expresion es un literal
 ;;
 ;; RECIBE   : expresion x
@@ -118,6 +123,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; wff-prefix-p
+;;
 ;; Predicado para determinar si una expresion esta en formato prefijo
 ;;
 ;; RECIBE   : expresion x
@@ -154,18 +161,19 @@
 ;; (wff-prefix-p '(v A (¬ B)))
 ;; (wff-prefix-p '(v (¬ B) A ))
 ;; (wff-prefix-p '(^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E))
-;; ;-> evaluan a T
+;; evaluan a T
 ;; (wff-prefix-p 'NIL)
 ;; (wff-prefix-p '(¬))
 ;; (wff-prefix-p '(=>))
 ;; (wff-prefix-p '(<=>))
 ;; (wff-prefix-p '(^ (V P (=> A ( B ^ (¬ C) ^ D))) (^ (<=> P (¬ Q)) P) E))
-;; ;-> evaluan a NIL
+;; evaluan a NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 4.1.4
 ;; wff-infix-p
 ;;
 ;; Predicado para determinar si una expresion esta en formato infijo
@@ -231,6 +239,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; prefix-to-infix
 ;; Convierte FBF en formato prefijo a FBF en formato infijo
 ;;
 ;; RECIBE   : FBF en formato prefijo
@@ -279,6 +288,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 4.1.5
 ;; infix-to-prefix
 ;;
 ;; Convierte FBF en formato infijo a FBF en formato prefijo
@@ -321,21 +331,21 @@
 ;; (infix-to-prefix '((a)))   ;; NIL
 ;; (infix-to-prefix '(a))     ;; NIL
 ;; (infix-to-prefix '(((a)))) ;; NIL
-;; (prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p) ^ e)) )
-;;;-> ((P V (A => (B ^ (¬ C) ^ D))) ^ ((P <=> (¬ Q)) ^ P) ^ E)
+;; (prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^ ((p <=> (¬ q)) ^ p) ^ e)))
+;; -> ((P V (A => (B ^ (¬ C) ^ D))) ^ ((P <=> (¬ Q)) ^ P) ^ E)
 ;; (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))
-;;;-> (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
+;; -> (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
 ;; (infix-to-prefix '(¬ ((¬ p) v q v (¬ r) v (¬ s))))
-;;;-> (¬ (V (¬ P) Q (¬ R) (¬ S)))
+;; -> (¬ (V (¬ P) Q (¬ R) (¬ S)))
 ;; (infix-to-prefix (prefix-to-infix'(V (¬ P) Q (¬ R) (¬ S))))
-;;;-> (V (¬ P) Q (¬ R) (¬ S))
+;; -> (V (¬ P) Q (¬ R) (¬ S))
 ;; (infix-to-prefix (prefix-to-infix'(¬ (V (¬ P) Q (¬ R) (¬ S)))))
-;;;-> (¬ (V (¬ P) Q (¬ R) (¬ S)))
+;; -> (¬ (V (¬ P) Q (¬ R) (¬ S)))
 ;; (infix-to-prefix 'a)  ; A
 ;; (infix-to-prefix '((p v (a => (b ^ (¬ c) ^ d))) ^  ((p <=> (¬ q)) ^ p) ^ e))
-;;;-> (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
+;; -> (^ (V P (=> A (^ B (¬ C) D))) (^ (<=> P (¬ Q)) P) E)
 ;; (infix-to-prefix '(¬ ((¬ p) v q v (¬ r) v (¬ s))))
-;;;-> (¬ (V (¬ P) Q (¬ R) (¬ S)))
+;; -> (¬ (V (¬ P) Q (¬ R) (¬ S)))
 ;; (infix-to-prefix  (prefix-to-infix '(^ (v p (=> a (^ b (¬ c) d)))))) ; '(v p (=> a (^ b (¬ c) d))))
 ;; (infix-to-prefix  (prefix-to-infix '(^ (^ (<=> p (¬ q)) p ) e))) ; '(^ (^ (<=> p (¬ q)) p ) e))
 ;; (infix-to-prefix (prefix-to-infix '( v (¬ p) q (¬ r) (¬ s))))  ; '( v (¬ p) q (¬ r) (¬ s)))
@@ -348,6 +358,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.6
+;; clause-p
+;;
 ;; Predicado para determinar si una FBF es una clausula
 ;;
 ;; RECIBE   : FBF en formato prefijo
@@ -381,7 +393,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 1.7
+;; EJERCICIO 4.1.7
+;; cnf-p
+;;
 ;; Predicado para determinar si una FBF esta en FNC
 ;;
 ;; RECIBE   : FFB en formato prefijo
@@ -422,6 +436,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.1: Incluya comentarios en el codigo adjunto
+;; eliminate-biconditional
 ;;
 ;; Dada una FBF, evalua a una FBF equivalente
 ;; que no contiene el connector <=>
@@ -445,10 +460,10 @@
 ;;
 ;; EJEMPLOS:
 ;;
-;;(eliminate-biconditional '(<=> p  (v q s p) ))
-;;   (^ (=> P (v Q S P)) (=> (v Q S P) P))
-;;(eliminate-biconditional '(<=>  (<=> p  q) (^ s (¬ q))))
-;;   (^ (=> (^ (=> P Q) (=> Q P)) (^ S (¬ Q)))
+;; (eliminate-biconditional '(<=> p  (v q s p) ))
+;; -> (^ (=> P (v Q S P)) (=> (v Q S P) P))
+;; (eliminate-biconditional '(<=>  (<=> p  q) (^ s (¬ q))))
+;; -> (^ (=> (^ (=> P Q) (=> Q P)) (^ S (¬ Q)))
 ;;      (=> (^ S (¬ Q)) (^ (=> P Q) (=> Q P))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -456,6 +471,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.2
+;; eliminate-conditional
+;;
 ;; Dada una FBF, que contiene conectores => evalua a
 ;; una FBF equivalente que no contiene el connector =>
 ;;
@@ -486,14 +503,33 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; exchange-and-or
+;;
+;; Intercambia conectores OR por conectores AND (los demás
+;; los mantiene igual)
+;;
+;; RECIBE   : conector
+;; EVALUA A : +and+ si recibe +or+, +or+ si recibe +and+, el
+;;            mismo valor si se recibe otro
+;;
 (defun exchange-and-or (connector)
   (cond
    ((eq connector +and+) +or+)
    ((eq connector +or+) +and+)
    (t connector)))
+;;
+;; EJEMPLOS:
+;; (exchange-and-or +or+) -> ^
+;; (exchange-and-or +and+) -> v
+;; (exchange-and-or +cond+) -> =>
+;; (exchange-and-or 'a) -> A
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.3
+;; reduce-scope-of-negation
+;;
 ;; Dada una FBF, que no contiene los conectores <=>, =>
 ;; evalua a una FNF equivalente en la que la negacion
 ;; aparece unicamente en literales negativos
@@ -522,17 +558,18 @@
 ;;  EJEMPLOS:
 ;;
 ;; (reduce-scope-of-negation '(¬ (v p (¬ q) r)))
-;; ;-> (^ (¬ P) Q (¬ R))
+;; -> (^ (¬ P) Q (¬ R))
 ;; (reduce-scope-of-negation '(¬ (^ p (¬ q) (v  r s (¬ a)))))
-;; ;-> (V (¬ P) Q (^ (¬ R) (¬ S) A))
+;; -> (V (¬ P) Q (^ (¬ R) (¬ S) A))
 ;; (reduce-scope-of-negation '(^ (v P (v (¬ a) (^ b (¬ c) d))) (^ (^ (v (¬ p) (¬ q)) (v (¬ (¬ q)) p)) p) e))
-;; ;-> (^ (V P (V (¬ A) (^ B (¬ C) D))) (^ (^ (V (¬ P) (¬ Q)) (V Q P)) P) E)
+;; -> (^ (V P (V (¬ A) (^ B (¬ C) D))) (^ (^ (V (¬ P) (¬ Q)) (V Q P)) P) E)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.4: Comente el codigo adjunto
+;; cnf
 ;;
 ;; Dada una FBF, que no contiene los conectores <=>, => en la
 ;; que la negacion aparece unicamente en literales negativos
@@ -652,6 +689,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.5:
+;; eliminate-connectors
 ;;
 ;; Dada una FBF en  FNC
 ;; evalua a lista de listas sin conectores
@@ -689,6 +727,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.6
+;; wff-infix-to-cnf
+;;
 ;; Dada una FBF en formato infijo
 ;; evalua a lista de listas sin conectores
 ;; que representa la FNC equivalente
@@ -711,7 +751,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;test-contenido
+;; test-contenido
+;;
+;; Comprueba si un literal esta contenido en una expresion
 ;;
 ;; RECIBE   : x (literal)
 ;;            y (expresion)
@@ -732,7 +774,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.1
-;; eliminacion de literales repetidos una clausula
+;; eliminate-repeated-literals
+;;
+;; Eliminacion de literales repetidos una clausula
 ;;
 ;; RECIBE   : K - clausula (lista de literales, disyuncion implicita)
 ;; EVALUA A : clausula equivalente sin literales repetidos
@@ -753,8 +797,12 @@
 ;; ;-> (B (¬ A) (¬ C) C A)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; test-clauses
+;;
+;; Comprueba si una clausula esta contenida en otra
 ;;
 ;; RECIBE   : k1, k2 - clausulas
 ;; EVALUA A : T si k1 esta contenida en k2
@@ -779,7 +827,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.2
-;; eliminacion de clausulas repetidas en una FNC
+;; eliminate-repeated-clauses
+;;
+;; Eliminacion de clausulas repetidas en una FNC
 ;;
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
@@ -804,6 +854,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.3
+;; subsume
+;;
 ;; Predicado que determina si una clausula subsume otra
 ;;
 ;; RECIBE   : K1, K2 clausulas
@@ -828,7 +880,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; eliminar-aux
-;; elimina las clausulas subsumidas por k de cnf
+;;
+;; Elimina las clausulas subsumidas por k de cnf
 ;;
 ;; RECIBE   : k   (clausula)
 ;;            cnf (FBF en FNC)
@@ -851,7 +904,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.4
-;; eliminacion de clausulas subsumidas en una FNC
+;; eliminate-subsumed-clauses
+;;
+;; Eliminacion de clausulas subsumidas en una FNC
 ;;
 ;; RECIBE   : cnf (FBF en FNC)
 ;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas
@@ -879,6 +934,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.5
+;; tautology-p
+;;
 ;; Predicado que determina si una clausula es tautologia
 ;;
 ;; RECIBE   : K (clausula)
@@ -902,7 +959,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.6
-;; eliminacion de clausulas en una FBF en FNC que son tautologia
+;; eliminate-tautologies
+;;
+;; Eliminacion de clausulas en una FBF en FNC que son tautologia
 ;;
 ;; RECIBE   : cnf - FBF en FNC
 ;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias
@@ -920,15 +979,17 @@
 ;;
 ;; (eliminate-tautologies
 ;;  '(((¬ b) a) (a (¬ a) b c) ( a (¬ b)) (s d (¬ s) (¬ s)) (a)))
-;; ;-> (((¬ B) A) (A (¬ B)) (A))
+;; -> (((¬ B) A) (A (¬ B)) (A))
 ;; (eliminate-tautologies '((a (¬ a) b c)))
-;; ;-> NIL
+;; -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.7
+;; simplify-cnf
+;;
 ;; simplifica FBF en FNC
 ;;        * elimina literales repetidos en cada una de las clausulas
 ;;        * elimina clausulas repetidas
@@ -954,6 +1015,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extract-clauses
+;;
 ;; Unificacion de las funciones de extraen las clausulas de una FNC
 ;;
 ;; RECIBE   : cnf      - FBF en FNC simplificada
@@ -975,15 +1037,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Funcion auxiliar
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; aux-neutral
+;;
+;; Comprueba si todos los literales de una lista son diferentes
+;; de un literal dado (tanto negado como no)
+;;
+;; RECIBE   : x  - literal a comparar
+;;            y  - lista de literales a comparar
+;; EVALUA A : T si no hay coincidencia entre literal y literales
+;;            de la lista,
+;;            NIL si hay alguna coincidencia
 (defun aux-neutral (x y)
   (every #'(lambda(z) (not (if (positive-literal-p z)
                              (equal z x)
                              (equal (second z) x))))
         y))
+;; EJEMPLOS:
+;; (aux-neutral 'a '(a b c)) -> NIL
+;; (aux-neutral 'a '((¬ b) (¬ a))) -> NIL
+;; (aux-neutral 'a '(b c)) -> T
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.1
+;; extract-neutral-clauses
+;;
 ;; Construye el conjunto de clausulas lit-neutras para una FNC
 ;;
 ;; RECIBE   : cnf  - FBF en FNC simplificada
@@ -997,13 +1079,13 @@
 ;;  EJEMPLOS:
 ;;
 ;; (extract-neutral-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
-;; ;-> ((R (¬ S) Q) ((¬ R) S))
+;; -> ((R (¬ S) Q) ((¬ R) S))
 ;; (extract-neutral-clauses 'r NIL)
-;; ;-> NIL
+;; -> NIL
 ;; (extract-neutral-clauses 'r '(NIL))
-;; ;-> (NIL)
+;; -> (NIL)
 ;; (extract-neutral-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
-;; ;-> ((P Q) (A B P) (A (¬ P) C))
+;; -> ((P Q) (A B P) (A (¬ P) C))
 ;; (extract-neutral-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) p q) (a b p) (a (¬ p) c) ((¬ r) p s)))
 ;; -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1012,6 +1094,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.2
+;; extract-positive-clauses
+;;
 ;; Construye el conjunto de clausulas lit-positivas para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
@@ -1037,14 +1121,34 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; Funcion auxiliar
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; aux-neg
+;;
+;; Comprueba si existe algun literal de una lista que sea el
+;; literal negado pasado por argumento
+;;
+;; RECIBE   : x  - literal a comparar
+;;            y  - lista a comparar
+;; EVALUA A : T si existe algun elemento de y que sea el negado
+;;            de x,
+;;            NIL en caso contrario
 (defun aux-neg (x y)
   (some #'(lambda(z) (when (negative-literal-p z)
                        (equal (second z) x)))
         y))
+;; EJEMPLOS:
+;; (aux-neg 'a '(a b)) -> NIL
+;; (aux-neg 'b '(a c)) -> NIL
+;; (aux-neg 'a '((¬ a) b)) -> T
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.3
+;; extract-negative-clauses
+;;
 ;; Construye el conjunto de clausulas lit-negativas para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
@@ -1058,22 +1162,23 @@
 ;;  EJEMPLOS:
 ;;
 ;; (extract-negative-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) qz) (a b p) (a (¬ p) c) ((¬ r) s)))
-;; ;-> ((A (¬ P) C))
+;; -> ((A (¬ P) C))
 ;;(extract-negative-clauses 'r NIL)
-;; ;-> NIL
+;; -> NIL
 ;;(extract-negative-clauses 'r '(NIL))
-;; ;-> NIL
+;; -> NIL
 ;; (extract-negative-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
-;; ;-> (((¬ R) S))
+;; -> (((¬ R) S))
 ;;(extract-negative-clauses 'p '(( p (¬ q) r) ( p q) (r (¬ s) p q) (a b p) ((¬ r) p s)))
-;; ;-> NIL
+;; -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; eliminar-rastro
-;; funcion no destructiva que elimina la presencia de un literal
+;;
+;; Funcion no destructiva que elimina la presencia de un literal
 ;; en una clausula
 ;;
 ;; RECIBE   : lit  - literal positivo
@@ -1085,12 +1190,15 @@
       (remove lit (copy-list k) :test #'equal) :test #'equal))
 ;;
 ;; EJEMLO:
-;; (auxiliar 'a '(a b c (¬ a))) ;-> (B C)
+;; (auxiliar 'a '(a b c (¬ a))) -> (B C)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; possible-resolve-on
-;; determina si es posible aplicar resolucion
+;;
+;; Determina si es posible aplicar resolucion
 ;;
 ;; RECIBE   : lit       - literal positivo
 ;;            k1, k2    - clausulas simplificadas
@@ -1104,13 +1212,17 @@
        (test-contenido lit k2))))
 ;;
 ;; EJEMPLOS:
-;; (possible-resolve-on 'p '(a b (¬ c)) '(p b a q r s)) ;-> NIL
-;; (possible-resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s)) ;-> T
+;; (possible-resolve-on 'p '(a b (¬ c)) '(p b a q r s)) -> NIL
+;; (possible-resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s)) -> T
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.4
-;; resolvente de dos clausulas
+;; resolve-on
+;;
+;; Resolvente de dos clausulas
 ;;
 ;; RECIBE   : lit      - literal positivo
 ;;            K1, K2      - clausulas simplificadas
@@ -1129,25 +1241,27 @@
 ;;  EJEMPLOS:
 ;;
 ;; (resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s))
-;; ;-> (((¬ C) B A Q R S))
+;; -> (((¬ C) B A Q R S))
 ;; (resolve-on 'p '(a b (¬ c) (¬ p)) '( p b a q r s))
-;; ;-> (((¬ C) B A Q R S))
+;; -> (((¬ C) B A Q R S))
 ;; (resolve-on 'p '(p) '((¬ p)))
-;; ;-> (NIL)
+;; -> (NIL)
 ;; (resolve-on 'p NIL '(p b a q r s))
-;; ;-> NIL
+;; -> NIL
 ;; (resolve-on 'p NIL NIL)
-;; ;-> NIL
+;; -> NIL
 ;; (resolve-on 'p '(a b (¬ c) (¬ p)) '(p b a q r s))
-;; ;-> (((¬ C) B A Q R S))
+;; -> (((¬ C) B A Q R S))
 ;; (resolve-on 'p '(a b (¬ c)) '(p b a q r s))
-;; ;-> NIL
+;; -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.5
+;; build-RES
+;;
 ;; Construye el conjunto de clausulas RES para una FNC
 ;;
 ;; RECIBE   : lit - literal positivo
@@ -1171,33 +1285,27 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-;; (build-RES 'p NIL)
-;; ;-> NIL
-;; (build-RES 'P '((A  (¬ P) B) (A P) (A B)))
-;; ;-> ((A B))
-;; (build-RES 'P '((B  (¬ P) A) (A P) (A B)))
-;; ;-> ((B A))
-;; (build-RES 'p '(NIL))
-;; ;-> (NIL)
-;; (build-RES 'p '((p) ((¬ p))))
-;; ;-> (NIL)
+;; (build-RES 'p NIL) -> NIL
+;; (build-RES 'P '((A  (¬ P) B) (A P) (A B))) -> ((A B))
+;; (build-RES 'P '((B  (¬ P) A) (A P) (A B))) -> ((B A))
+;; (build-RES 'p '(NIL)) -> (NIL)
+;; (build-RES 'p '((p) ((¬ p)))) -> (NIL)
 ;; (build-RES 'q '((p q) ((¬ p) q) (a b q) (p (¬ q)) ((¬ p) (¬ q))))
-;; ;-> ((P) ((¬ P) P) ((¬ P)) (B A P) (B A (¬ P)))
+;; -> ((P) ((¬ P) P) ((¬ P)) (B A P) (B A (¬ P)))
 ;; (build-RES 'p '((p q) (c q) (a b q) (p (¬ q)) (p (¬ q))))
-;; ;-> ((A B Q) (C Q))
+;; -> ((A B Q) (C Q))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 4.5
-;; Comprueba si una FNC es SAT calculando RES para todos los
-;; atomos en la FNC
+;; extract-positive-literals-clause
 ;;
-;; RECIBE   : cnf - FBF en FNC simplificada
-;; EVALUA A :	T  si cnf es SAT
-;;                NIL  si cnf es UNSAT
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Extra la lista de literales positivos de una clausula
+;;
+;; RECIBE   : clause  - clausula
+;; EVALUA A : NIL si no hay literales positivos en clause,
+;;            lista de literales positivos en caso contrario
 (defun extract-positive-literals-clause (clause)
     (if (null clause)
         nil
@@ -1206,10 +1314,43 @@
             (if (positive-literal-p first-literal)
                 (cons first-literal next-it)
                 next-it))))
+;;
+;; EJEMPLOS:
+;; (extract-positive-literals-clause '((¬ a) (¬ b))) -> NIL
+;; (extract-positive-literals-clause '(a b (¬ c) d)) -> (A B D)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; extract-positive-literals-cnf
+;;
+;; Extra la lista de literales positivos de una expresion en FNC
+;;
+;; RECIBE   : cnf  - expresion en CNF
+;; EVALUA A : NIL si no hay literales positivos en cnf,
+;;            lista de literales positivos en caso contrario
 (defun extract-positive-literals-cnf (cnf)
     (eliminate-repeated-literals (mapcan #'(lambda(x) (extract-positive-literals-clause x)) cnf)))
+;;
+;; EJEMPLO:
+;; (extract-positive-literals-cnf '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a))))
+;; -> (Q A B C D)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 4.5
+;; RES-SAT-p
+;;
+;; Comprueba si una FNC es SAT calculando RES para todos los
+;; atomos en la FNC
+;;
+;; RECIBE   : cnf - FBF en FNC simplificada
+;; EVALUA A :	T  si cnf es SAT
+;;                NIL  si cnf es UNSAT
+;;
 (defun RES-SAT-aux (pos-literals cnf)
     (cond
       ((null cnf) NIL)
@@ -1242,6 +1383,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.6:
+;; logical-consequence-RES-SAT-p
+;;
 ;; Resolucion basada en RES-SAT-p
 ;;
 ;; RECIBE   : wff - FBF en formato infijo
@@ -1266,12 +1409,20 @@
 ;; (logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) '(¬ q)) -> T
 ;; (logical-consequence-RES-SAT-p '((p => q) ^ p) 'q) -> T
 ;; (logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬ q)) -> NIL
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'a) -> T
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'a) -> NIL
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
-;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^
+;;   (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^
+;;   (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'a) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) 'a) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^
+;;   ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
