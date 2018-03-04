@@ -1072,35 +1072,59 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; eliminar-rastro
+;; funcion no destructiva que elimina la presencia de un literal
+;; en una clausula
+;;
+;; RECIBE   : lit  - literal positivo
+;;            k    - clausula simplificada
+;; EVALUA A : clausula los literales lit ¬lit eliminados
+;;                        
+(defun eliminar-rastro (lit k)
+    (remove (reduce-scope-of-negation (list +not+ lit)) 
+      (remove lit (copy-list k) :test #'equal) :test #'equal))
+;;
+;; EJEMLO:
+;; (auxiliar 'a '(a b c (¬ a))) ;-> (B C)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; possible-resolve-on
+;; determina si es posible aplicar resolucion
+;;
+;; RECIBE   : lit       - literal positivo
+;;            k1, k2    - clausulas simplificadas
+;; EVALUA A : T si es posible
+;;            NIL en caso contrario
+;;              
+(defun possible-resolve-on (lit k1 k2)
+  (if (test-contenido lit k1)
+    (test-contenido (list +not+ lit) k2)
+  (and (test-contenido (list +not+ lit) k1) 
+       (test-contenido lit k2))))
+;;
+;; EJEMPLOS:
+;; (possible-resolve-on 'p '(a b (¬ c)) '(p b a q r s)) ;-> NIL
+;; (possible-resolve-on 'p '(a b (¬ c) p) '((¬ p) b a q r s)) ;-> T
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.4
 ;; resolvente de dos clausulas
 ;;
-;; RECIBE   : lambda      - literal positivo
+;; RECIBE   : lit      - literal positivo
 ;;            K1, K2      - clausulas simplificadas
-;; EVALUA A : res_lambda(K1,K2)
+;; EVALUA A : res_lit(K1,K2)
 ;;                        - lista que contiene la
 ;;                          clausula que resulta de aplicar resolucion
 ;;                          sobre K1 y K2, con los literales repetidos
 ;;                          eliminados
 ;;
-(defun usefull (elt k)
-  (some #'(lambda(x) (equal x elt))
-    k))
-
-(defun possible (elt k1 k2)
-  (if (usefull elt k1)
-    (usefull (list +not+ elt) k2)
-  (and (usefull (list +not+ elt) k1) (usefull elt k2))))
-
-(defun auxiliar (elt k)
-    (remove (reduce-scope-of-negation (list +not+ elt)) 
-      (remove elt (copy-list k) :test #'equal) :test #'equal))
-
-(defun resolve-on (elt k1 k2)
+(defun resolve-on (lit k1 k2)
   (unless (or (null k1) (null k2))
-    (when (possible elt k1 k2)
+    (when (possible-resolve-on lit k1 k2)
       (list (eliminate-repeated-literals
-        (auxiliar elt (append k1 k2)))))))
+            (eliminar-rastro lit (append k1 k2)))))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -1126,21 +1150,24 @@
 ;; EJERCICIO 4.4.5
 ;; Construye el conjunto de clausulas RES para una FNC
 ;;
-;; RECIBE   : lambda - literal positivo
+;; RECIBE   : lit - literal positivo
 ;;            cnf    - FBF en FNC simplificada
 ;;
-;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
+;; EVALUA A : RES_lit(cnf) con las clauses repetidas eliminadas
 ;;
-(defun build-RES-aux (elt positivas negativas)
+(defun build-RES-aux (lit positivas negativas)
   (unless (or (null positivas) (null negativas))
-    (append (mapcan #'(lambda(x) (resolve-on elt (first negativas) x)) positivas)
-            (build-RES-aux elt (rest negativas) positivas))))
+    (append (mapcan #'(lambda(x) (resolve-on lit (first negativas) x)) 
+                    positivas)
+            (build-RES-aux lit (rest negativas) positivas))))
 
-(defun build-RES (elt cnf)
+(defun build-RES (lit cnf)
   (unless (null cnf)
     (eliminate-repeated-clauses
-      (append (extract-neutral-clauses elt cnf)
-              (build-RES-aux elt (extract-positive-clauses elt cnf) (extract-negative-clauses elt cnf))))))
+      (append (extract-neutral-clauses lit cnf)
+              (build-RES-aux lit 
+                             (extract-positive-clauses lit cnf) 
+                             (extract-negative-clauses lit cnf))))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -1173,6 +1200,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; NO ESTA PROBADO SI FUNCIONA (DEPENDE TAMBIEN DE QUE FUNCIONE BUILD-RES)
+; te he arreglado un caso magicamente. culpa a lo que quieras y toca lo que quieras
 (defun extract-positive-literals-clause (clause)
     (if (null clause)
         nil
@@ -1226,7 +1254,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; necesito que funcione el anterior y ademas es que estoy cansada asi que luego sigo
-
+; no creo que siga la verdad
 
 (defun logical-consequence-RES-SAT-p (wff w)
   (unless (or (null wff) (null w))
