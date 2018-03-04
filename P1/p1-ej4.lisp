@@ -178,25 +178,26 @@
   (unless (null x)
     (or (literal-p x)
         (and (listp x)
-        	 (let ((op1 (first x))
-        		     (op2 (first (rest x)))
-            	   (op3 (rest (rest x))))
-             (cond
-            	((unary-connector-p op1)
-             		(and (null op3)
-                  	 (wff-infix-p op2)))
-            	((binary-connector-p op2)
-               	(and (null (rest op3))
-                     (wff-infix-p (first x))
-                     (wff-infix-p (first op3))))
-            	((n-ary-connector-p op2)
-            		(let ((tmp (first (rest op3))))
-            		(when (or (eql op2 tmp) (null tmp))
-                 		(and (wff-infix-p op1)
-                         (wff-infix-p (first op3))))))
-            	((n-ary-connector-p op1)
-            		(null (rest x)))
-            	(t NIL)))))))
+        	   (let ((op1 (first x))
+        		       (op2 (first (rest x)))
+            	     (op3 (rest (rest x))))
+               (cond
+            	  ((unary-connector-p op1)
+             		 (and (null op3)
+                  	  (wff-infix-p op2)))
+            	  ((binary-connector-p op2)
+               	 (and (null (rest op3))
+                      (wff-infix-p (first x))
+                      (wff-infix-p (first op3))))
+            	  ((n-ary-connector-p op2)
+            		 (let ((tmp (first (rest op3))))
+            		   (when (or (eql op2 tmp) 
+                             (null tmp))
+                 		 (and (wff-infix-p op1)
+                          (wff-infix-p (first op3))))))
+            	  ((n-ary-connector-p op1)
+            		 (null (rest x)))
+            	  (t NIL)))))))
 ;;
 ;; EJEMPLOS:
 ;;
@@ -285,21 +286,21 @@
 ;; RECIBE   : FBF en formato infijo
 ;; EVALUA A : FBF en formato prefijo
 ;;
-(defun aux (op)
+(defun infix-to-prefix-eliminate-connectors-aux (op)
   (unless (null op)
-    (cons (first op) (aux (rest (rest op))))))
+    (cons (first op) (infix-to-prefix-eliminate-connectors-aux (rest (rest op))))))
 
 (defun infix-to-prefix (wff)
   (when (wff-infix-p wff)
     (if (literal-p wff)
-        wff
+      wff
       (let ((op1 (first wff))
         	  (op2 (first (rest wff)))
             (op3 (rest (rest wff))))
         (cond
           ((unary-connector-p op1)
             (list op1
-            	  (infix-to-prefix op2)))
+            	   (infix-to-prefix op2)))
           ((binary-connector-p op2)
             (list op2
             	    (infix-to-prefix op1)
@@ -309,10 +310,8 @@
               (infix-to-prefix op1)
               (cons op2
               	    (cons (infix-to-prefix op1)
-              		      (mapcar #'(lambda(x) (infix-to-prefix x))
-                            (aux op3))))))
-          ((and (n-ary-connector-p op1) (null op3))
-          	wff)
+              		        (mapcar #'infix-to-prefix
+                            (infix-to-prefix-eliminate-connectors-aux op3))))))
           (t NIL))))))
 ;;
 ;; EJEMPLOS
@@ -509,23 +508,25 @@
     (if (literal-p wff)
       wff
   	  (if (equal +not+ (first wff))
-   	    (cond
-  	  	  ((negative-literal-p (second wff)) (second (second wff))) ;Caso doble negacion
-  	      (t 
-  	        (let ((resto (rest wff)))
-  	        (append (mapcar #'(lambda(x) (if (n-ary-connector-p x)
-  	    		                               (exchange-and-or x)
-  	    		                               (reduce-scope-of-negation (list +not+ x))))
-  	                  (first resto))
-  	                (reduce-scope-of-negation (rest resto))))))
-  	 (mapcar #'reduce-scope-of-negation (rest wff))))))
+   	    (if (negative-literal-p (second wff))
+          (second (second wff)) ;Caso doble negacion
+          (let ((resto (rest wff)))
+  	       (append (mapcar #'(lambda(x) (if (n-ary-connector-p x)
+  	    		                              (exchange-and-or x)
+  	    		                              (reduce-scope-of-negation (list +not+ x))))
+  	                       (first resto))
+  	               (reduce-scope-of-negation (rest resto)))))
+  	    (cons (first wff) 
+              (mapcar #'reduce-scope-of-negation (rest wff)))))))
 ;;
 ;;  EJEMPLOS:
 ;;
-;;(reduce-scope-of-negation '(¬ (v p (¬ q) r)))
-;;; (^ (¬ P) Q (¬ R))
-;;(reduce-scope-of-negation '(¬ (^ p (¬ q) (v  r s (¬ a)))))
-;;;  (V (¬ P) Q (^ (¬ R) (¬ S) A))
+;; (reduce-scope-of-negation '(¬ (v p (¬ q) r)))
+;; ;-> (^ (¬ P) Q (¬ R))
+;; (reduce-scope-of-negation '(¬ (^ p (¬ q) (v  r s (¬ a)))))
+;; ;-> (V (¬ P) Q (^ (¬ R) (¬ S) A))
+;; (reduce-scope-of-negation '(^ (v P (v (¬ a) (^ b (¬ c) d))) (^ (^ (v (¬ p) (¬ q)) (v (¬ (¬ q)) p)) p) e))
+;; ;-> (^ (V P (V (¬ A) (^ B (¬ C) D))) (^ (^ (V (¬ P) (¬ Q)) (V Q P)) P) E)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -707,6 +708,28 @@
 ;; ((P (¬ A) B) (P (¬ A) (¬ C)) (P (¬ A) D) ((¬ P) (¬ Q)) (Q P) (P) (E))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;test-contenido
+;;
+;; RECIBE   : x (literal)
+;;            y (expresion)
+;; EVALUA A : T si x esta contenido en y
+;;            NIL en caso contrario
+;;
+(defun test-contenido (x y)
+  (some #'(lambda(z) (equal x z)) y))
+;;
+;; EJEMPLOS :
+;;
+;; (test-contenido 'c '(a b c)) ;T
+;; (test-contenido 'c '(a b)) ;NIL
+;; (test-contenido 'c 'nil) ;NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.1
 ;; eliminacion de literales repetidos una clausula
@@ -719,7 +742,7 @@
     (let* ((primero   (first k))
           (resto     (rest k))
           (eliminar-sig (eliminate-repeated-literals resto)))
-  	(if (some #'(lambda(x) (equal x primero)) resto)
+  	(if (test-contenido primero resto)
   	  eliminar-sig
   	  (cons primero
   	  	    eliminar-sig)))))
@@ -728,6 +751,28 @@
 ;;
 ;; (eliminate-repeated-literals '(a b (¬ c) (¬ a) a c (¬ c) c a))
 ;; ;-> (B (¬ A) (¬ C) C A)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; test-clauses
+;;
+;; RECIBE   : k1, k2 - clausulas
+;; EVALUA A : T si k1 esta contenida en k2 
+;;            NIL en caso contrario
+;;
+(defun test-clauses (k1 k2)
+  (if (null k1)
+    t
+    (let ((primero (first k1)))
+      (when (test-contenido primero k2)
+        (unless (test-contenido primero (remove primero (copy-list k2) :test #'equal)) 
+          (and t (test-clauses (rest k1) k2)))))))
+;;
+;; EJEMPLOS:
+;; (test-clauses '(a b) '(a b c d)) ;T
+;; (test-clauses '(a b c d) '(a b)) ;NIL
+;; (test-clauses 'nil '(a b)) ;T
+;; (test-clauses '(a b) 'nil) ;NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -739,20 +784,10 @@
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;
-(defun test-clauses (k1 k2)
-  (if (null k1)
-    t
-    (let ((primero (first k1)))
-      (if (some #'(lambda(x) (equal x primero)) k2)
-        (if (some #'(lambda(x) (equal x primero)) (remove primero (copy-list k2) :test #'equal))
-          NIL
-          (and t (test-clauses (rest k1) k2)))
-        NIL))))
-
 (defun eliminate-repeated-clauses (cnf)
   (unless (null cnf)
-    (let* ((elt   (eliminate-repeated-literals (first cnf)))
-    	    (resto (rest cnf))
+    (let* ((elt         (eliminate-repeated-literals (first cnf)))
+    	    (resto        (rest cnf))
           (eliminar-sig (eliminate-repeated-clauses resto)))
     (if (some #'(lambda(x) (and (test-clauses elt x) (test-clauses x elt))) resto)
       eliminar-sig
@@ -776,72 +811,67 @@
 ;;            NIL en caso contrario
 ;;
 (defun subsume (k1 k2)
-  (unless (null k2)
-  	(if (null k1)
-      '(NIL)
-      (let ((primero-k1      (first k1))
-      	    (resto-k1        (rest k1))
-      	    (subsume-resto   (subsume (rest k1) k2)))
-      (when (and (some #'(lambda(x) (equal x primero-k1))
-      	           k2)
-      	         (not (null subsume-resto)))
-      	(if (null resto-k1)
-      	  k1
-      	  (cons primero-k1
-    	        subsume-resto)))))))
+  (when (test-clauses k1 k2)
+    (list k1)))
 ;;
 ;;  EJEMPLOS:
 ;;
-;; (subsume '(a) '(a b (¬ c)))
-;; ((a))
-;; (subsume NIL '(a b (¬ c)))
-;; (NIL)
-;; (subsume '(a b (¬ c)) '(a) )
-;; NIL
-;; (subsume '( b (¬ c)) '(a b (¬ c)) )
-;; ( b (¬ c))
-;; (subsume '(a b (¬ c)) '( b (¬ c)))
-;; NIL
-;; (subsume '(d b (¬ e)) '(d  b (¬ c)))
-;; nil
-;; (subsume '(a b (¬ c)) '((¬ a) b (¬ c) a))
-;; (A B (¬ C))
-;; (subsume '((¬ a) b (¬ c) a) '(a b (¬ c)) )
-;; nil
+;; (subsume '(a) '(a b (¬ c))) ;-> ((a))
+;; (subsume NIL '(a b (¬ c))) ;-> (NIL)
+;; (subsume '(a b (¬ c)) '(a)) ;-> NIL
+;; (subsume '(b (¬ c)) '(a b (¬ c))) ;-> ((b (¬ c)))
+;; (subsume '(a b (¬ c)) '( b (¬ c))) ;-> NIL
+;; (subsume '(d b (¬ e)) '(d  b (¬ c))) ;-> nil
+;; (subsume '(a b (¬ c)) '((¬ a) b (¬ c) a)) ;-> ((A B (¬ C)))
+;; (subsume '((¬ a) b (¬ c) a) '(a b (¬ c))) ;-> nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; eliminar-aux
+;; elimina las clausulas subsumidas por k de cnf
+;;
+;; RECIBE   : k   (clausula)
+;;            cnf (FBF en FNC)
+;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas por k
+;;
+(defun eliminar-aux (k cnf)
+  (unless (null cnf)
+    (let* ((primero       (first cnf))
+           (eliminar-sig  (eliminar-aux k (rest cnf))))
+    (if (null (subsume k primero))
+      (cons primero
+            eliminar-sig)
+      eliminar-sig))))
+;;
+;; EJEMPLO:
+;; (eliminar-aux '(a b) '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a))) 
+;; ;-> ((B C) ((¬ A) B))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.4
 ;; eliminacion de clausulas subsumidas en una FNC
 ;;
-;; RECIBE   : K (clausula), cnf (FBF en FNC)
+;; RECIBE   : cnf (FBF en FNC)
 ;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas
 ;;
-(defun auxiliar-lista (elt lst)
-  (unless (null lst)
-    (unless (subsume elt (first lst))
-  	  (cons (first lst)
-  		    (auxiliar-lista elt (rest lst))))))
-
-(defun eliminate-subsumed-clauses (cnf)(unless (null cnf)
-  	(if (every #'null (mapcar #'(lambda(x) (subsume x (first cnf))) (rest cnf)))
-  	  (cons (first cnf)
-  	  	    (eliminate-subsumed-clauses (auxiliar-lista (first cnf) (rest cnf))))
-  	  (eliminate-subsumed-clauses (rest cnf)))))
-
+(defun eliminate-subsumed-clauses (cnf)
+  (unless (null cnf)
+    (let ((primero  (first cnf))
+          (resto    (rest cnf)))
+  	(if (every #'null (mapcar #'(lambda(x) (subsume x primero)) resto))
+  	  (cons primero
+  	  	    (eliminate-subsumed-clauses (eliminar-aux primero resto)))
+  	  (eliminate-subsumed-clauses resto)))))
 ;;
 ;;  EJEMPLOS:
 ;;
-;; (eliminate-subsumed-clauses
-;; '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a)))
-;; ;-> ((A (¬ C) B) ((¬ A) B) (B C)) ;; el orden no es importante
-;; (eliminate-subsumed-clauses
-;; '((a b c) (b c) (a (¬ c) b) (b)  ((¬ a) b) (a b (¬ a)) (c b a)))
+;; (eliminate-subsumed-clauses '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a)))
+;; ;-> ((A (¬ C) B) ((¬ A) B) (B C))
+;; (eliminate-subsumed-clauses '((a b c) (b c) (a (¬ c) b) (b)  ((¬ a) b) (a b (¬ a)) (c b a)))
 ;; ;-> ((B))
-;; (eliminate-subsumed-clauses
-;; '((a b c) (b c) (a (¬ c) b) ((¬ a))  ((¬ a) b) (a b (¬ a)) (c b a)))
+;; (eliminate-subsumed-clauses '((a b c) (b c) (a (¬ c) b) ((¬ a))  ((¬ a) b) (a b (¬ a)) (c b a)))
 ;; ;-> ((A (¬ C) B) ((¬ A)) (B C))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -857,13 +887,10 @@
 ;;
 (defun tautology-p (k)
   (unless (null k)
-    (let ((elt    (first k))
-  	  	 (resto  (rest k)))
-  	(if (positive-literal-p elt)
-  	  (or (some #'(lambda(x) (equal x (list +not+ elt))) resto)
-  	  	  (tautology-p resto))
-  	  (or (some #'(lambda(x) (equal x (second elt))) resto)
-  	  	  (tautology-p resto))))))
+    (let ((resto (rest k)))
+  	(or (test-contenido (reduce-scope-of-negation (list +not+ (first k))) 
+                        resto)
+  	 	  (tautology-p resto)))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -880,15 +907,14 @@
 ;; RECIBE   : cnf - FBF en FNC
 ;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias
 ;;
-(defun eliminate-tautologies (cnf)(unless (null cnf)
+(defun eliminate-tautologies (cnf)
   (unless (null cnf)
-    (let* ((primero       (first cnf))
-           (resto         (rest cnf))
-           (eliminar-sig  (eliminate-tautologies resto)))
+    (let ((primero       (first cnf))
+          (eliminar-sig  (eliminate-tautologies (rest cnf))))
   	(if (tautology-p primero)
   	  eliminar-sig
   	  (cons primero
-  	  	    eliminar-sig))))))
+  	  	    eliminar-sig)))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -927,26 +953,46 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 4.4.1
-;; Construye el conjunto de clausulas lambda-neutras para una FNC
+;; extract-clauses
+;; Unificacion de las funciones de extraen las clausulas de una FNC
 ;;
-;; RECIBE   : cnf    - FBF en FBF simplificada
-;;            lambda - literal positivo
-;; EVALUA A : cnf_lambda^(0) subconjunto de clausulas de cnf
-;;            que no contienen el literal lambda ni ¬lambda
+;; RECIBE   : cnf      - FBF en FNC simplificada
+;;            lit      - literal positivo
+;;            function - funcion para la condicion de extracion de la clausula
+;; EVALUA A : clausulas de cnf que cumplen la funcion function de lit
 ;;
-(defun extract-neutral-clauses (elt cnf)
+(defun extract-clauses (lit cnf function)
   (unless (null cnf)
-    (let* ((primero     (first cnf))
-           (resto       (rest cnf))
-           (extraer-sig (extract-neutral-clauses elt resto)))
-  	(if (some #'(lambda(x) (if (positive-literal-p x)
-  		                     (equal x elt)
-  		                     (equal (second x) elt)))
-  	      primero)
-  	  extraer-sig
-  	  (cons primero
-  	  	    extraer-sig)))))
+    (let ((primero      (first cnf))
+          (extraer-sig  (extract-clauses lit (rest cnf) function)))
+      (if (funcall function lit primero)
+        (cons primero
+              extraer-sig)
+        extraer-sig))))
+;;
+;; EJEMPLO:
+;; (extract-clauses 'p '((a b) (p b) (a b)) #'test-contenido) ;-> ((P B))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; Funcion auxiliar
+(defun aux-neutral (x y)
+  (every #'(lambda(z) (not (if (positive-literal-p z)
+                             (equal z x)
+                             (equal (second z) x))))
+        y))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 4.4.1
+;; Construye el conjunto de clausulas lit-neutras para una FNC
+;;
+;; RECIBE   : cnf  - FBF en FNC simplificada
+;;            lit  - literal positivo
+;; EVALUA A : cnf_lit^(0) subconjunto de clausulas de cnf
+;;            que no contienen el literal lit ni ¬lit
+;;
+(defun extract-neutral-clauses (lit cnf)
+  (extract-clauses lit cnf #'aux-neutral))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -966,23 +1012,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.2
-;; Construye el conjunto de clausulas lambda-positivas para una FNC
+;; Construye el conjunto de clausulas lit-positivas para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
-;;            lambda - literal positivo
-;; EVALUA A : cnf_lambda^(+) subconjunto de clausulas de cnf
-;;            que contienen el literal lambda
+;;            lit - literal positivo
+;; EVALUA A : cnf_lit^(+) subconjunto de clausulas de cnf
+;;            que contienen el literal lit
 ;;
-(defun extract-positive-clauses (elt cnf)
-	(unless (null cnf)
-    (let* ((primero      (first cnf))
-           (resto        (rest cnf))
-           (extraer-sig  (extract-positive-clauses elt resto)))
-  	(if (some #'(lambda(x) (and (positive-literal-p x) (equal x elt)))
-  	      primero)
-  	  (cons primero
-  	  	    extraer-sig)
-      extraer-sig))))
+(defun extract-positive-clauses (lit cnf)
+	(extract-clauses lit cnf #'test-contenido))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -999,38 +1037,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; Funcion auxiliar
+(defun aux-neg (x y)
+  (some #'(lambda(z) (when (negative-literal-p z) 
+                       (equal (second z) x))) 
+        y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.4.3
-;; Construye el conjunto de clausulas lambda-negativas para una FNC
+;; Construye el conjunto de clausulas lit-negativas para una FNC
 ;;
 ;; RECIBE   : cnf    - FBF en FNC simplificada
-;;            lambda - literal positivo
-;; EVALUA A : cnf_lambda^(-) subconjunto de clausulas de cnf
-;;            que contienen el literal ¬lambda
+;;            lit - literal positivo
+;; EVALUA A : cnf_lit^(-) subconjunto de clausulas de cnf
+;;            que contienen el literal ¬lit
 ;;
-(defun extract-negative-clauses (elt cnf)
-  (unless (null cnf)
-    (let* ((primero      (first cnf))
-           (resto        (rest cnf))
-           (extraer-sig  (extract-negative-clauses elt resto)))
-  	(if (some #'(lambda(x) (and (negative-literal-p x) (equal (second x) elt)))
-  	      primero)
-  	  (cons primero
-  	  	    extraer-sig)
-  	  extraer-sig))))
+(defun extract-negative-clauses (lit cnf)
+  (extract-clauses lit cnf #'aux-neg))
 ;;
 ;;  EJEMPLOS:
 ;;
 ;; (extract-negative-clauses 'p '((p (¬ q) r) (p q) (r (¬ s) qz) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ;-> ((A (¬ P) C))
-;; (extract-negative-clauses 'r NIL)
+;;(extract-negative-clauses 'r NIL)
 ;; ;-> NIL
-;; (extract-negative-clauses 'r '(NIL))
+;;(extract-negative-clauses 'r '(NIL))
 ;; ;-> NIL
 ;; (extract-negative-clauses 'r '((p (¬ q) r) (p q) (r (¬ s) q) (a b p) (a (¬ p) c) ((¬ r) s)))
 ;; ;-> (((¬ R) S))
-;; (extract-negative-clauses 'p '(( p (¬ q) r) ( p q) (r (¬ s) p q) (a b p) ((¬ r) p s)))
+;;(extract-negative-clauses 'p '(( p (¬ q) r) ( p q) (r (¬ s) p q) (a b p) ((¬ r) p s)))
 ;; ;-> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1191,8 +1226,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; necesito que funcione el anterior y ademas es que estoy cansada asi que luego sigo
-
-(defun  )
 
 
 (defun logical-consequence-RES-SAT-p (wff w)

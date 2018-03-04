@@ -496,3 +496,40 @@
 ;;; (B + 1) (B + 2) (B + 3) (B + 4) (B - 1) (B - 2) (B - 3) (B - 4)
 ;;; (C + 1) (C + 2) (C + 3) (C + 4) (C - 1) (C - 2) (C - 3) (C - 4))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 5 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Breadth-first-search in graphs
+;;;
+(defun new-paths (path node net)
+  (mapcar #'(lambda(n)
+              (cons n path))
+          (rest (assoc node net))))
+
+(defun bfs (end queue net)
+  (if (null queue) '()              ;[while Queue Q != vacia]
+    (let* ((path (first queue))     ;[node] hace referencia a [n] en nuestro pseudocodigo
+           (node (first path)))     
+      (if (eql node end)            ;[Si n es la meta]
+        (reverse path)              ;[evalua al camino recorrido]
+        (bfs end                    
+            (append (rest queue)   ;[sacamos n de Q]
+                    (new-paths path node net)) ;[para todos los vecinos de n en G=path]
+            net)))))                           ;[metemos v en la cola Q]
+
+
+;;;
+;;; EJEMPLO:
+;; (bfs 'f '((a)) '((a d) (b d f) (c e) (d f) (e b f) (f))) ;(A D F)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun shortest-path (start end net)
+  (bfs end (list (list start)) net))
+;;
+;; EJEMPLO:
+;; (shortest-path 'a 'f '((a d) (b d f) (c e) (d f) (e b f) (f))) ;(A D F)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
