@@ -31,7 +31,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 4.1.2
+;; EJERCICIO 4.1.1
 ;; positive-literal-p
 ;;
 ;; Predicado para determinar si una expresion en LISP
