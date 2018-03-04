@@ -191,7 +191,7 @@
                       (wff-infix-p (first op3))))
             	  ((n-ary-connector-p op2)
             		 (let ((tmp (first (rest op3))))
-            		   (when (or (eql op2 tmp) 
+            		   (when (or (eql op2 tmp)
                              (null tmp))
                  		 (and (wff-infix-p op1)
                           (wff-infix-p (first op3))))))
@@ -516,7 +516,7 @@
   	    		                              (reduce-scope-of-negation (list +not+ x))))
   	                       (first resto))
   	               (reduce-scope-of-negation (rest resto)))))
-  	    (cons (first wff) 
+  	    (cons (first wff)
               (mapcar #'reduce-scope-of-negation (rest wff)))))))
 ;;
 ;;  EJEMPLOS:
@@ -757,7 +757,7 @@
 ;; test-clauses
 ;;
 ;; RECIBE   : k1, k2 - clausulas
-;; EVALUA A : T si k1 esta contenida en k2 
+;; EVALUA A : T si k1 esta contenida en k2
 ;;            NIL en caso contrario
 ;;
 (defun test-clauses (k1 k2)
@@ -765,7 +765,7 @@
     t
     (let ((primero (first k1)))
       (when (test-contenido primero k2)
-        (unless (test-contenido primero (remove primero (copy-list k2) :test #'equal)) 
+        (unless (test-contenido primero (remove primero (copy-list k2) :test #'equal))
           (and t (test-clauses (rest k1) k2)))))))
 ;;
 ;; EJEMPLOS:
@@ -844,7 +844,7 @@
       eliminar-sig))))
 ;;
 ;; EJEMPLO:
-;; (eliminar-aux '(a b) '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a))) 
+;; (eliminar-aux '(a b) '((a b c) (b c) (a (¬ c) b)  ((¬ a) b) (a b (¬ a)) (c b a)))
 ;; ;-> ((B C) ((¬ A) B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -888,7 +888,7 @@
 (defun tautology-p (k)
   (unless (null k)
     (let ((resto (rest k)))
-  	(or (test-contenido (reduce-scope-of-negation (list +not+ (first k))) 
+  	(or (test-contenido (reduce-scope-of-negation (list +not+ (first k)))
                         resto)
   	 	  (tautology-p resto)))))
 ;;
@@ -1039,8 +1039,8 @@
 
 ;; Funcion auxiliar
 (defun aux-neg (x y)
-  (some #'(lambda(z) (when (negative-literal-p z) 
-                       (equal (second z) x))) 
+  (some #'(lambda(z) (when (negative-literal-p z)
+                       (equal (second z) x)))
         y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1079,9 +1079,9 @@
 ;; RECIBE   : lit  - literal positivo
 ;;            k    - clausula simplificada
 ;; EVALUA A : clausula los literales lit ¬lit eliminados
-;;                        
+;;
 (defun eliminar-rastro (lit k)
-    (remove (reduce-scope-of-negation (list +not+ lit)) 
+    (remove (reduce-scope-of-negation (list +not+ lit))
       (remove lit (copy-list k) :test #'equal) :test #'equal))
 ;;
 ;; EJEMLO:
@@ -1096,11 +1096,11 @@
 ;;            k1, k2    - clausulas simplificadas
 ;; EVALUA A : T si es posible
 ;;            NIL en caso contrario
-;;              
+;;
 (defun possible-resolve-on (lit k1 k2)
   (if (test-contenido lit k1)
     (test-contenido (list +not+ lit) k2)
-  (and (test-contenido (list +not+ lit) k1) 
+  (and (test-contenido (list +not+ lit) k1)
        (test-contenido lit k2))))
 ;;
 ;; EJEMPLOS:
@@ -1157,25 +1157,25 @@
 ;;
 (defun build-RES-aux (lit positivas negativas)
   (unless (or (null positivas) (null negativas))
-    (append (mapcan #'(lambda(x) (resolve-on lit (first negativas) x)) 
+    (append (mapcan #'(lambda(x) (resolve-on lit x (first negativas)))
                     positivas)
-            (build-RES-aux lit (rest negativas) positivas))))
+            (build-RES-aux lit positivas (rest negativas)))))
 
 (defun build-RES (lit cnf)
   (unless (null cnf)
     (eliminate-repeated-clauses
       (append (extract-neutral-clauses lit cnf)
-              (build-RES-aux lit 
-                             (extract-positive-clauses lit cnf) 
+              (build-RES-aux lit
+                             (extract-positive-clauses lit cnf)
                              (extract-negative-clauses lit cnf))))))
 ;;
 ;;  EJEMPLOS:
 ;;
 ;; (build-RES 'p NIL)
 ;; ;-> NIL
-;; (build-RES 'P '((A  (¬ P) B) (A P) (A B))) 
+;; (build-RES 'P '((A  (¬ P) B) (A P) (A B)))
 ;; ;-> ((A B))
-;; (build-RES 'P '((B  (¬ P) A) (A P) (A B))) 
+;; (build-RES 'P '((B  (¬ P) A) (A P) (A B)))
 ;; ;-> ((B A))
 ;; (build-RES 'p '(NIL))
 ;; ;-> (NIL)
@@ -1198,9 +1198,6 @@
 ;; EVALUA A :	T  si cnf es SAT
 ;;                NIL  si cnf es UNSAT
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; NO ESTA PROBADO SI FUNCIONA (DEPENDE TAMBIEN DE QUE FUNCIONE BUILD-RES)
-; te he arreglado un caso magicamente. culpa a lo que quieras y toca lo que quieras
 (defun extract-positive-literals-clause (clause)
     (if (null clause)
         nil
@@ -1223,24 +1220,25 @@
 (defun  RES-SAT-p (cnf)
    (unless (equal (RES-SAT-aux (extract-positive-literals-cnf cnf) cnf) '(NIL))
       t))
-
 ;;
-;;  EJEMPLOS:
+;; EJEMPLOS:
 ;;
 ;;
 ;; SAT Examples
 ;;
-;; (RES-SAT-p nil)  ;;; T
-;; (RES-SAT-p '((p) ((¬ q)))) ;;; T
-;; (RES-SAT-p '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) ;;; T
-;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) ;;;T
+;; (RES-SAT-p nil)  -> T
+;; (RES-SAT-p '((p) ((¬ q)))) -> T
+;; (RES-SAT-p '((a b d) ((¬ p) q) ((¬ c) a b) ((¬ b) (¬ p) d) (c d (¬ a)))) -> T
+;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) ((¬ q)) ((¬ p) (¬ q) r))) -> T
 ;;
 ;; UNSAT Examples
 ;;
-;; (RES-SAT-p '(nil))         ;;; NIL
-;; (RES-SAT-p '((S) nil))     ;;; NIL
-;; (RES-SAT-p '((p) ((¬ p)))) ;;; NIL
-;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) ;;; NIL
+;; (RES-SAT-p '((P (¬ Q)) NIL (K R))) -> NIL
+;; (RES-SAT-p '(nil))         -> NIL
+;; (RES-SAT-p '((S) nil))     -> NIL
+;; (RES-SAT-p '((p) ((¬ p)))) -> NIL
+;; (RES-SAT-p '(((¬ p) (¬ q) (¬ r)) (q r) ((¬ q) p) (p) (q) ((¬ r)) ((¬ p) (¬ q) r))) -> NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.6:
@@ -1252,73 +1250,28 @@
 ;; EVALUA A : T   si w es consecuencia logica de wff
 ;;            NIL en caso de que no sea consecuencia logica.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; necesito que funcione el anterior y ademas es que estoy cansada asi que luego sigo
-; no creo que siga la verdad
-
 (defun logical-consequence-RES-SAT-p (wff w)
-  (unless (or (null wff) (null w))
-    (append (cnf wff)
-            (reduce-scope-of-negation (list +not+ (cnf w))))))
-
+    (let ((alpha (wff-infix-to-cnf wff))
+          (beta (wff-infix-to-cnf (list +not+ w))))
+        (when (null (RES-SAT-p (append alpha beta)))
+            t)))
 ;;
 ;;  EJEMPLOS:
 ;;
-(logical-consequence-RES-SAT-p NIL 'a) ;;; NIL
-(logical-consequence-RES-SAT-p NIL NIL) ;;; NIL
-(logical-consequence-RES-SAT-p '(q ^ (¬ q)) 'a) ;;; T
-(logical-consequence-RES-SAT-p '(q ^ (¬ q)) '(¬ a)) ;;; T
-
-(logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) 'q)
-;; T
-
-(logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) '(¬ q))
-;; T
-
-(logical-consequence-RES-SAT-p '((p => q) ^ p) 'q)
-;; T
-
-(logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬q))
-;; NIL
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- '(¬ a))
-;; T
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- 'a)
-;; T
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- 'a)
-;; NIL
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- '(¬ a))
-;; T
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- 'q)
-;; NIL
-
-(logical-consequence-RES-SAT-p
- '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
- '(¬ q))
-;; NIL
-
-(or
- (logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬q))      ;; NIL
- (logical-consequence-RES-SAT-p
-  '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
-  'a) ;; NIL
- (logical-consequence-RES-SAT-p
-  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
-  'q) ;; NIL
- (logical-consequence-RES-SAT-p
-  '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q))))
-  '(¬ q)))
+;; (logical-consequence-RES-SAT-p NIL 'a) -> NIL
+;; (logical-consequence-RES-SAT-p NIL NIL) -> NIL
+;; (logical-consequence-RES-SAT-p '(q ^ (¬ q)) 'a) -> T
+;; (logical-consequence-RES-SAT-p '(q ^ (¬ q)) '(¬ a)) -> T
+;; (logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) 'q) -> T
+;; (logical-consequence-RES-SAT-p '((p => (¬ p)) ^ p) '(¬ q)) -> T
+;; (logical-consequence-RES-SAT-p '((p => q) ^ p) 'q) -> T
+;; (logical-consequence-RES-SAT-p '((p => q) ^ p) '(¬ q)) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => (a v (¬ b))) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'a) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'a) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p => ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ a)) -> T
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) 'q) -> NIL
+;; (logical-consequence-RES-SAT-p '(((¬ p) => q) ^ (p <=> ((¬ a) ^ b)) ^ ( (¬ p) => (r  ^ (¬ q)))) '(¬ q)) -> NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
