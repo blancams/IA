@@ -482,7 +482,7 @@
 ;; (eliminate-conditional '(=> p q))                      ;;; (V (¬ P) Q)
 ;; (eliminate-conditional '(=> p (v q s p)))              ;;; (V (¬ P) (V Q S P))
 ;; (eliminate-conditional '(=> (=> (¬ p) q) (^ s (¬ q)))) ;;; (V (¬ (V (¬ (¬ P)) Q)) (^ S (¬ Q)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;duce
 
 
 
@@ -502,7 +502,7 @@
 ;; EVALUA A : FBF equivalente en formato prefijo en la que
 ;;            la negacion  aparece unicamente en literales
 ;;            negativos.
-;;
+;;      
 (defun reduce-scope-of-negation (wff)
   (unless (null wff)
     (if (literal-p wff)
@@ -729,6 +729,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defun eliminate (object function1 function2)
+  (unless (null object)
+    (let* ((primero     (funcall function2 object))
+          (resto        (rest object))
+          (eliminar-sig (eliminate resto function1 function2)))
+    (if (funcall function1 primero resto)
+      eliminar-sig
+      (cons primero
+            eliminar-sig)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.1
@@ -738,14 +747,15 @@
 ;; EVALUA A : clausula equivalente sin literales repetidos
 ;;
 (defun eliminate-repeated-literals (k)
-  (unless (null k)
-    (let* ((primero   (first k))
-          (resto     (rest k))
-          (eliminar-sig (eliminate-repeated-literals resto)))
-  	(if (test-contenido primero resto)
-  	  eliminar-sig
-  	  (cons primero
-  	  	    eliminar-sig)))))
+  (eliminate k #'test-contenido #'first))
+  ; (unless (null k)
+  ;   (let* ((primero   (first k))
+  ;         (resto     (rest k))
+  ;         (eliminar-sig (eliminate-repeated-literals resto)))
+  ; 	(if (test-contenido primero resto)
+  ; 	  eliminar-sig
+  ; 	  (cons primero
+  ; 	  	    eliminar-sig)))))
 ;;
 ;; EJEMPLO:
 ;;
@@ -776,7 +786,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
+(defun eliminate-repeated-clauses-aux (x y)
+  (some #'(lambda(z) (and (test-clauses x z) (test-clauses z x)))
+    y))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.3.2
 ;; eliminacion de clausulas repetidas en una FNC
@@ -785,14 +797,17 @@
 ;; EVALUA A : FNC equivalente sin clausulas repetidas
 ;;
 (defun eliminate-repeated-clauses (cnf)
-  (unless (null cnf)
-    (let* ((elt         (eliminate-repeated-literals (first cnf)))
-    	    (resto        (rest cnf))
-          (eliminar-sig (eliminate-repeated-clauses resto)))
-    (if (some #'(lambda(x) (and (test-clauses elt x) (test-clauses x elt))) resto)
-      eliminar-sig
-      (cons elt
-      	    eliminar-sig)))))
+  ; (unless (null cnf)
+  ;   (let* ((elt         (eliminate-repeated-literals (first cnf)))
+  ;   	    (resto        (rest cnf))
+  ;         (eliminar-sig (eliminate-repeated-clauses resto)))
+  ;   (if (some #'(lambda(x) (and (test-clauses elt x) (test-clauses x elt))) resto)
+  ;     eliminar-sig
+  ;     (cons elt
+  ;     	    eliminar-sig)))))
+  (eliminate cnf 
+             #'eliminate-repeated-clauses-aux 
+             #'(lambda(x) (eliminate-repeated-literals (first x)))))
 ;;
 ;; EJEMPLO:
 ;;
@@ -1153,7 +1168,7 @@
 ;; RECIBE   : lit - literal positivo
 ;;            cnf    - FBF en FNC simplificada
 ;;
-;; EVALUA A : RES_lit(cnf) con las clauses repetidas eliminadas
+;; EVALUA A : RES_lit(cnf) con las clausulas repetidas eliminadas
 ;;
 (defun build-RES-aux (lit positivas negativas)
   (unless (or (null positivas) (null negativas))
