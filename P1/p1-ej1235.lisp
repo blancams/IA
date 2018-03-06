@@ -11,10 +11,10 @@
 ;;; OUTPUT: t si x es el vector cero o nil, nil en caso contrario
 ;;;
 (defun check-zero (x)
-   (if (null x)
+  (if (null x)
       t
-      (and (= (first x) 0)
-           (check-zero (rest x)))))
+    (and (= (first x) 0)
+         (check-zero (rest x)))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (check-zero '()) ;-> t          ; caso base
@@ -32,10 +32,10 @@
 ;;; OUTPUT: producto escalar entre x e y
 ;;;
 (defun prod-esc-rec (x y)
-   (if (or (null x) (null y))
+  (if (or (null x) (null y))
       0
-      (+ (* (first x) (first y))
-         (prod-esc-rec (rest x) (rest y)))))
+    (+ (* (first x) (first y))
+       (prod-esc-rec (rest x) (rest y)))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (prod-esc-rec '() '()) ;-> 0          ; caso base
@@ -53,7 +53,7 @@
 ;;; OUTPUT: producto escalar entre x e y
 ;;;
 (defun prod-esc-mapcar (x y)
-   (apply #'+ (mapcar #'* x y)))
+  (apply #'+ (mapcar #'* x y)))
 ;;;
 ;;; EJEMPLOS:
 ;;; (prod-esc-mapcar '() '()) ;-> 0          ; caso base
@@ -71,10 +71,10 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-rec (x y)
-   (unless (or (check-zero x) (check-zero y))
-      (/ (prod-esc-rec x y)
-         (* (sqrt (prod-esc-rec x x))
-            (sqrt (prod-esc-rec y y))))))
+  (unless (or (check-zero x) (check-zero y))
+    (/ (prod-esc-rec x y)
+       (* (sqrt (prod-esc-rec x x))
+          (sqrt (prod-esc-rec y y))))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (sc-rec '() '()) ;-> nil                 ; caso no permitido
@@ -93,10 +93,10 @@
 ;;; OUTPUT: similitud coseno entre x e y
 ;;;
 (defun sc-mapcar (x y)
-   (unless (or (check-zero x) (check-zero y))
-      (/ (prod-esc-mapcar x y)
-         (* (sqrt (prod-esc-mapcar x x))
-            (sqrt (prod-esc-mapcar y y))))))
+  (unless (or (check-zero x) (check-zero y))
+    (/ (prod-esc-mapcar x y)
+       (* (sqrt (prod-esc-mapcar x x))
+          (sqrt (prod-esc-mapcar y y))))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (sc-mapcar '() '()) ;-> nil          ; caso no permitido
@@ -117,7 +117,7 @@
 ;;; OUTPUT: diccionario formado por las similitudes y los vectores
 ;;;
 (defun sc-conf-gendict (x vs)
-   (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs))
+  (mapcar #'(lambda (y) (list (sc-rec x y) y)) vs))
 ;;;
 ;;; EJEMPLOS:
 ;;; (sc-conf-gendict '(1 2) '((1 2) (1 3)))
@@ -135,7 +135,7 @@
 ;;; OUTPUT: lista de vectores procedentes del diccionario en el mismo orden
 ;;;
 (defun sc-conf-selvec (lst)
-   (mapcar #'(lambda (y) (first (second y))) lst))
+  (mapcar #'(lambda (y) (first (second y))) lst))
 ;;;
 ;;; EJEMPLOS:
 ;;; (sc-conf-selvec '((1.0 (1 2)) (0.98994946 (1 3)))) ;-> ((1 2) (1 3))
@@ -152,7 +152,10 @@
 ;;; OUTPUT: Vectores cuya similitud es superior al nivel de confianza, ordenados
 ;;;
 (defun sc-conf (cat vs conf)
-   (sc-conf-selvec (sort (remove conf (sc-conf-gendict cat vs) :test #'> :key #'first) #'> :key #'first)))
+  (sc-conf-selvec
+   (sort
+    (remove conf (sc-conf-gendict cat vs) :test #'> :key #'first)
+    #'> :key #'first)))
 ;;;
 ;;; EJEMPLOS:
 ;;; (sc-conf '(1 2) '((1 2) (1 3) (1 4) (2 30)) 0.95) ;-> ((1 2) (1 3) (1 4))
@@ -163,44 +166,58 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-class-gendict (x vs func)
-;;; Realiza la misma funcion que sc-conf-gendict pero ahora tenemos en cuenta
-;;; que los vectores tienen un identificador, y la funcion para calcular la
-;;; similitud se pasa como parametro
+;;; Realiza la misma funcion que sc-conf-gendict pero ahora tenemos
+;;; en cuentaque los vectores tienen un identificador, y la funcion
+;;; para calcular la similitud se pasa como parametro
 ;;;
 ;;; INPUT: x: vector, representado como una lista
 ;;; vs: vector de vectores, representado como una lista de listas
 ;;; func: funcion con la que calcular la similitud
 ;;;
-;;; OUTPUT: diccionario formado por las similitudes y los identificadores de los vectores
+;;; OUTPUT: diccionario formado por las similitudes y los
+;;; identificadores de los vectores
 ;;;
 (defun sc-class-gendict (x vs func)
-   (mapcar #'(lambda (y) (list (funcall func (rest x) (rest y)) (car y))) vs))
+  (mapcar #'(lambda (y)
+              (list (funcall func (rest x)
+                             (rest y))
+                    (car y)))
+    vs))
 ;;;
 ;;; EJEMPLOS:
-;;; (sc-class-gendict '(1 1 2) '((1 1 2) (2 1 3)) #'sc-rec) ;-> ((1.0 1) (0.98994946 2))
-;;; (sc-class-gendict '(1 2 3) '((1 1 1) (2 1 2)) #'sc-mapcar) ;-> ((0.9805807 1) (0.99227786 2))
+;;; (sc-class-gendict '(1 1 2) '((1 1 2) (2 1 3)) #'sc-rec)
+;;; -> ((1.0 1) (0.98994946 2))
+;;; (sc-class-gendict '(1 2 3) '((1 1 1) (2 1 2)) #'sc-mapcar)
+;;; -> ((0.9805807 1) (0.99227786 2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-class-selvec (lst)
-;;; Realiza la misma funcion que sc-conf-selvec pero ahora en vez de devolver el
-;;; vector, devuelve su identificacion junto con la similitud en un par
+;;; Realiza la misma funcion que sc-conf-selvec pero ahora en vez
+;;; de devolver el vector, devuelve su identificacion junto con la
+;;; similitud en un par
 ;;;
 ;;; INPUT: lst: diccionario de similitudes-vectores
 ;;;
 ;;; OUTPUT: lista de pares con identificadores de vectores y similitudes
 ;;;
 (defun sc-class-selvec (lst)
-   (mapcar #'(lambda (y) (cons (second y) (first y))) lst))
+  (mapcar #'(lambda (y)
+              (cons (second y)
+                    (first y)))
+    lst))
 ;;;
 ;;; EJEMPLOS:
-;;; (sc-class-selvec '((1.0 1) (0.98994946 2))) ;-> ((1 . 1.0) (2 . 0.98994946))
-;;; (sc-class-selvec '((0.9805807 1) (0.99227786 2))) ;-> ((1 . 0.9805807) (2 . 0.99227786))
+;;; (sc-class-selvec '((1.0 1) (0.98994946 2)))
+;;; -> ((1 . 1.0) (2 . 0.98994946))
+;;; (sc-class-selvec '((0.9805807 1) (0.99227786 2)))
+;;; -> ((1 . 0.9805807) (2 . 0.99227786))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-conf-alt (x vs func)
-;;; Devuelve lista de pares identificador-similitud ordenados por similitud a uno dado
+;;; Devuelve lista de pares identificador-similitud ordenados por
+;;; similitud a uno dado
 ;;;
 ;;; INPUT: x: vector, representado como una lista
 ;;; vs: vector de vectores, representado como una lista de listas
@@ -208,28 +225,37 @@
 ;;; OUTPUT: Pares identificador-similitud ordenados
 ;;;
 (defun sc-conf-alt (x vs func)
-   (sc-class-selvec (sort (sc-class-gendict x vs func) #'> :key #'first)))
+  (sc-class-selvec
+   (sort (sc-class-gendict x vs func)
+         #'> :key #'first)))
 ;;;
 ;;; EJEMPLOS:
-;;; (sc-conf-alt '(2 1 2) '((1 1 2) (2 1 3) (3 1 4) (4 2 30)) #'sc-rec) ;-> ((1 . 1.0) (2 . 0.98994946) (3 . 0.97618705) (4 . 0.9221943))
-;;; (sc-conf-alt '(3 2 5) '((1 1 5) (2 4 10)) #'sc-mapcar) ;-> ((2 . 1.0) (1 . 0.98328197))
+;;; (sc-conf-alt '(2 1 2) '((1 1 2) (2 1 3) (3 1 4) (4 2 30)) #'sc-rec)
+;;; -> ((1 . 1.0) (2 . 0.98994946) (3 . 0.97618705) (4 . 0.9221943))
+;;; (sc-conf-alt '(3 2 5) '((1 1 5) (2 4 10)) #'sc-mapcar)
+;;; -> ((2 . 1.0) (1 . 0.98328197))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier (cats texts func)
 ;;; Clasifica a los textos en categorias.
 ;;;
-;;; INPUT: cats: vector de vectores, representado como una lista de listas
+;;; INPUT:
+;;; cats: vector de vectores, representado como una lista de listas
 ;;; texts: vector de vectores, representado como una lista de listas
-;;; func: función para evaluar la similitud coseno
-;;; OUTPUT: Pares identificador de categoría con resultado de similitud coseno
+;;; func: funcion para evaluar la similitud coseno
+;;; OUTPUT: Pares identificador de categori�a con resultado de similitud coseno
 ;;;
 (defun sc-classifier (cats texts func)
-   (mapcar #'(lambda (y) (car (sc-conf-alt y cats func))) texts))
+  (mapcar #'(lambda (y)
+              (car (sc-conf-alt y cats func)))
+    texts))
 ;;;
 ;;; EJEMPLOS:
-;;; (sc-classifier '((1 1 2) (2 5 10)) '((1 1 3) (2 1 4) (3 2 5)) #'sc-rec) ;-> ((1 . 0.98994946) (2 . 0.9761871) (1 . 0.9965458))
-;;; (sc-classifier '((1 43 23 12) (2 33 54 24)) '((1 3 22 134) (2 43 26 58)) #'sc-mapcar) ;-> ((2 . 0.48981872) (1 . 0.81555086))
+;;; (sc-classifier '((1 1 2) (2 5 10)) '((1 1 3) (2 1 4) (3 2 5)) #'sc-rec)
+;;; -> ((1 . 0.98994946) (2 . 0.9761871) (1 . 0.9965458))
+;;; (sc-classifier '((1 43 23 12) (2 33 54 24)) '((1 3 22 134) (2 43 26 58))
+;;; #'sc-mapcar) -> ((2 . 0.48981872) (1 . 0.81555086))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -258,13 +284,13 @@
 ;;    raiz de la funcion, o NIL si no se ha encontrado ninguna.
 ;;
 (defun bisect (f a b tol)
-   (let ((pto-medio (/ (+ a b) 2)))
-   (unless (>= (* (funcall f a) (funcall f b)) 0)
+  (let ((pto-medio (/ (+ a b) 2)))
+    (unless (>= (* (funcall f a) (funcall f b)) 0)
       (if (< (- b a) tol)
-         pto-medio
-         (if (>= (* (funcall f a) (funcall f pto-medio)) 0)
+          pto-medio
+        (if (>= (* (funcall f a) (funcall f pto-medio)) 0)
             (bisect f pto-medio b tol)
-            (bisect f a pto-medio tol))))))
+          (bisect f a pto-medio tol))))))
 ;;
 ;; EJEMPLOS:
 ;;
@@ -291,8 +317,8 @@
 ;;    lst en caso contrario.
 ;;
 (defun clean (lst)
-   (unless (every #'null lst)
-      lst))
+  (unless (every #'null lst)
+    lst))
 ;;
 ;; EJEMPLOS:
 ;;
@@ -327,12 +353,12 @@
 ;;    funcion en los sub-intervalos dados.
 ;;
 (defun allroot-aux (f lst tol)
-   (unless (and (null (rest lst)) (not (null (first lst))))
-   (cons (bisect f (first lst) (second lst) tol)
-      (allroot-aux f (rest lst) tol))))
+  (unless (and (null (rest lst)) (not (null (first lst))))
+    (cons (bisect f (first lst) (second lst) tol)
+          (allroot-aux f (rest lst) tol))))
 
 (defun allroot (f lst tol)
-   (clean (allroot-aux f lst tol)))
+  (clean (allroot-aux f lst tol)))
 ;;
 ;; EJEMPLOS:
 ;;
@@ -370,12 +396,12 @@
 ;;;    Lista con todas las raices encontradas.
 ;;;
 (defun allind-aux (f x incr tol max)
-   (let ((y (+ x incr)))
-      (unless (> y max)
-         (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
+  (let ((y (+ x incr)))
+    (unless (> y max)
+      (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
 
 (defun allind (f a b N tol)
-   (clean (allind-aux f a (/ (- b a) (expt 2 N)) tol b)))
+  (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b))
 ;;;
 ;;; EJEMPLOS:
 ;;;
@@ -393,7 +419,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-elt-lst (elt lst)
-;;; Genera una lista con las combinaciones de un elemento con los elementos de una lista
+;;; Genera una lista con las combinaciones de un elemento con los
+;;; elementos de una lista
 ;;;
 ;;; INPUT: elt: elemento a combinar
 ;;; lst: lista de elementos a combinar
@@ -401,9 +428,9 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-elt-lst (elt lst)
-   (unless (null lst)
-      (cons (list elt (first lst))
-         (combine-elt-lst elt (rest lst)))))
+  (unless (null lst)
+    (cons (list elt (first lst))
+          (combine-elt-lst elt (rest lst)))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (combine-elt-lst 'a nil) ;-> nil                     ; caso base
@@ -424,9 +451,9 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-lst-lst (lst1 lst2)
-   (unless (or (null lst1) (null lst2))
-      (append (combine-elt-lst (first lst1) lst2)
-              (combine-lst-lst (rest lst1) lst2))))2
+  (unless (or (null lst1) (null lst2))
+    (append (combine-elt-lst (first lst1) lst2)
+            (combine-lst-lst (rest lst1) lst2))))
 ;;;
 ;;; EJEMPLOS:
 ;;; (combine-lst-lst '() '()) ;-> nil                                ; caso no permitido
@@ -438,7 +465,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-elt-lol (elt lol)
-;;; Genera una lista con las combinaciones de un elemento con los elementos de una lista de listas
+;;; Genera una lista con las combinaciones de un elemento con los
+;;; elementos de una lista de listas
 ;;;
 ;;; INPUT: elt: elemento a combinar
 ;;; lol: lista de listas de elementos a combinar
@@ -446,7 +474,7 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-elt-lol (elt lol)
-   (mapcar #'(lambda (y) (cons elt y)) lol))
+  (mapcar #'(lambda (y) (cons elt y)) lol))
 ;;;
 ;;; EJEMPLOS:
 ;;; (combine-elt-lol 'a nil) ;-> nil                           ; caso no permitido
@@ -455,7 +483,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-lst-lol (lst lol)
-;;; Genera el producto cartesiano de una lista con todas las listas de una lista de listas
+;;; Genera el producto cartesiano de una lista con todas las listas
+;;; de una lista de listas
 ;;;
 ;;; INPUT: lst: lista de elementos a combinar
 ;;; lol: lista de listas de elementos a combinar
@@ -463,75 +492,136 @@
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-lst-lol (lst lol)
-   (mapcan #'(lambda (z) (combine-elt-lol z lol)) lst))
+  (mapcan #'(lambda (z) (combine-elt-lol z lol)) lst))
 ;;;
 ;;; EJEMPLOS:
-;;; (combine-lst-lol nil '((1 2) (3 4))) ;-> nil                                    ; caso no permitido
-;;; (combine-lst-lol '(1 2) nil) ;-> nil                                            ; caso no permitido
-;;; (combine-lst-lol '(a b) '((1 2) (3 4))) ;-> ((A 1 2) (A 3 4) (B 1 2) (B 3 4))   ; caso tipico
+;;; (combine-lst-lol nil '((1 2) (3 4))) -> nil   ; caso no permitido
+;;; (combine-lst-lol '(1 2) nil) -> nil           ; caso no permitido
+;;; (combine-lst-lol '(a b) '((1 2) (3 4)))
+;;; -> ((A 1 2) (A 3 4) (B 1 2) (B 3 4))          ; caso tipico
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-list-of-lsts (lstolsts)
-;;; Genera una lista con todas las disposiciones de elementos pertenecientes a listas
-;;; contenidas en una lista de listas
+;;; Genera una lista con todas las disposiciones de elementos
+;;; pertenecientes a listas contenidas en una lista de listas
 ;;;
-;;; INPUT: lstolsts: lista de listas de la que sacar todas las combinaciones
+;;; INPUT:
+;;; lstolsts: lista de listas de la que sacar todas las combinaciones
 ;;;
 ;;; OUTPUT: Lista con todas las posibles combinaciones
 ;;;
 (defun combine-list-of-lsts (lstolsts)
-   (if (null lstolsts)
+  (if (null lstolsts)
       '(nil)
-      (append (combine-lst-lol (first lstolsts)
-              (combine-list-of-lsts (rest lstolsts))))))
+    (append (combine-lst-lol (first lstolsts)
+                             (combine-list-of-lsts (rest lstolsts))))))
 ;;;
 ;;; EJEMPLOS:
-;;; (combine-list-of-lsts '()) ;-> (nil)                                ; caso base
-;;; (combine-list-of-lsts '(() (+ -) (1 2 3 4))) ;-> nil                ; caso no permitido
-;;; (combine-list-of-lsts '((a b c) () (1 2 3 4))) ;-> nil              ; caso no permitido
-;;; (combine-list-of-lsts '((a b c) (+ -) ())) ;-> nil                  ; caso no permitido
-;;; (combine-list-of-lsts '((a b c))) ;-> ((a) (b) (c))                 ; caso particular
-;;; (combine-list-of-lsts '((a b c) (+ -) (1 2 3 4))) ;->               ; caso tipico
+;;; (combine-list-of-lsts '()) -> (nil)                                ; caso base
+;;; (combine-list-of-lsts '(() (+ -) (1 2 3 4))) -> nil                ; caso no permitido
+;;; (combine-list-of-lsts '((a b c) () (1 2 3 4))) -> nil              ; caso no permitido
+;;; (combine-list-of-lsts '((a b c) (+ -) ())) -> nil                  ; caso no permitido
+;;; (combine-list-of-lsts '((a b c))) -> ((a) (b) (c))                 ; caso particular
+;;; (combine-list-of-lsts '((a b c) (+ -) (1 2 3 4))) ->               ; caso tipico
 ;;; ((A + 1) (A + 2) (A + 3) (A + 4) (A - 1) (A - 2) (A - 3) (A - 4)
 ;;; (B + 1) (B + 2) (B + 3) (B + 4) (B - 1) (B - 2) (B - 3) (B - 4)
 ;;; (C + 1) (C + 2) (C + 3) (C + 4) (C - 1) (C - 2) (C - 3) (C - 4))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EJERCICIO 5 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Breadth-first-search in graphs
-;;;
+;; EJERCICIO 5.3, 5.4
+;; bfs
+;;
+;; Ejecuta el algoritmo de b�squeda primero en anchura
+;;
+;; RECIBE   : end    - nodo meta
+;;            queue  - cola de caminos explorados
+;;            net    - grafo
+;; EVALUA A : camino que lleva a la meta,
+;;            NIL si no existe camino
+;;
 (defun new-paths (path node net)
+  ;; toma la lista de vecinos de node y a�ade a cada camino el
+  ;; camino que surge de seguir explorando por el vecino
   (mapcar #'(lambda(n)
               (cons n path))
-          (rest (assoc node net))))
+    (rest (assoc node net))))
 
 (defun bfs (end queue net)
-  (if (null queue) '()              ;[while Queue Q != vacia]
-    (let* ((path (first queue))     ;[node] hace referencia a [n] en nuestro pseudocodigo
+  ;; en queue se encuentran todos los caminos (en orden inverso)
+  ;; para ir de un nodo (el que seleccionemos al llamar a bfs o
+  ;; los nodos de un conjunto que elijamos) a otro, con el objetivo
+  ;; de llegar al nodo end; si queue se vacia, entonces es que no
+  ;; existe un camino
+  (if (null queue) '()
+    ;; tomamos el primer camino de queue y su primer nodo (que por
+    ;; el orden inverso, es el ultimo que se ha explorado)
+    (let* ((path (first queue))
            (node (first path)))
-      (if (eql node end)            ;[Si n es la meta]
-        (reverse path)              ;[evalua al camino recorrido]
+      ;; si ese nodo es la meta, hemos terminado y se devuelve path
+      ;; invertido (dado que queremos camino desde inicio hasta fin)
+      (if (eql node end)
+          (reverse path)
+        ;; si ese nodo no es meta, repetimos el proceso para el resto
+        ;; de caminos dentro de queue, y a�adiendo aquellos que surgen
+        ;; de explorar el nodo que hemos explorado y no es meta
         (bfs end
-            (append (rest queue)   ;[sacamos n de Q]
-                    (new-paths path node net)) ;[para todos los vecinos de n en G=path]
-            net)))))                           ;[metemos v en la cola Q]
-
-
-;;;
-;;; EJEMPLO:
-;; (bfs 'f '((a)) '((a d) (b d f) (c e) (d f) (e b f) (f))) ;(A D F)
+             (append (rest queue)
+                     (new-paths path node net))
+             net)))))
+;;
+;; EJEMPLO:
+;; (bfs 'f '((a)) '((a d) (b d f) (c e) (d f) (e b f) (f))) -> (A D F)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 5.5, 5.6
+;; shortest-path
+;;
+;; Obtiene el camino optimo entre dos nodos
+;;
+;; RECIBE   : start  - nodo de inicio
+;;            end    - nodo de llegada
+;;            net    - grafo
+;; EVALUA A : camino optimo entre start y end,
+;;            NIL si no existe camino
+;;
 (defun shortest-path (start end net)
   (bfs end (list (list start)) net))
 ;;
 ;; EJEMPLO:
-;; (shortest-path 'a 'f '((a d) (b d f) (c e) (d f) (e b f) (f))) ;(A D F)
+;; (shortest-path 'a 'f '((a d) (b d f) (c e) (d f) (e b f) (f))) -> (A D F)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EJERCICIO 5.8
+;; bfs-improved, shortest-path-improved
+;;
+;; Solucionan el problema de la inexistencia de caminos
+;; para grafos con ciclos
+;;
+;; Entradas y salidas iguales que para bfs y shortest-path
+;;
+(defun bfs-improved (end queue net)
+  (if (null queue) '()
+    (let* ((path (first queue))
+           (node (first path)))
+      (if (eql node end)
+          (reverse path)
+        (bfs-improved end
+                      (append (rest queue)
+                              (new-paths path node net))
+                      (remove (assoc node net) net))))))
+
+(defun shortest-path-improved (start end net)
+  (bfs-improved end (list (list start)) net))
+;;
+;; EJEMPLO:
+;; (shortest-path-improved 'f 'c '((a b d e) (b a d e f)
+;; (c a g) (d a b g h) (e a b g h) (f b h) (g d e h) (h d e f g)))
+;; -> NIL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
