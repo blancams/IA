@@ -401,7 +401,7 @@
       (cons (bisect f x y tol) (allind-aux f y incr tol max)))))
 
 (defun allind (f a b N tol)
-  (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b))
+  (clean (allind-aux f a (coerce (/ (- b a) (expt 2 N)) 'real) tol b)))
 ;;;
 ;;; EJEMPLOS:
 ;;;
@@ -879,7 +879,7 @@
 ;; (infix-to-prefix '(a))     -> NIL
 ;; (infix-to-prefix '(((a)))) -> NIL
 ;; (prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (~ c) ^ d)))
-:: ^ ((p <=> (~ q)) ^ p) ^ e)))
+;; ^ ((p <=> (~ q)) ^ p) ^ e)))
 ;; -> ((P V (A => (B ^ (~ C) ^ D))) ^ ((P <=> (~ Q)) ^ P) ^ E)
 ;; (infix-to-prefix '((p v (a => (b ^ (~ c) ^ d))) ^
 ;; ((p <=> (~ q)) ^ p) ^ e))
@@ -1272,7 +1272,7 @@
 ;; (eliminate-connectors (cnf '(^ (v (~ a) b c) (~ e)
 ;; (^ e f (~ g) h) (v m n) (^ r s q) (v u q) (^ x y))))
 ;; -> (((~ A) B C) ((~ E)) (E) (F) ((~ G)) (H) (M N) (R) (S)
-:: (Q) (U Q) (X) (Y))
+;; (Q) (U Q) (X) (Y))
 ;; (eliminate-connectors (cnf '(v p  q  (^ r  m)  (^ n  q)  s )))
 ;; -> ((P Q R N S) (P Q R Q S) (P Q M N S) (P Q M Q S))
 ;; (eliminate-connectors (print (cnf '(^ (v p  (~ q)) (~ a)
