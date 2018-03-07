@@ -1457,8 +1457,8 @@
 ;;
 (defun eliminar-aux (k cnf)
   (unless (null cnf)
-    (let* ((primero       (first cnf))
-           (eliminar-sig  (eliminar-aux k (rest cnf))))
+    (let ((primero       (first cnf))
+          (eliminar-sig  (eliminar-aux k (rest cnf))))
       (if (null (subsume k primero))
           (cons primero
                 eliminar-sig)
