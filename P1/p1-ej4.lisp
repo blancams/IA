@@ -702,11 +702,13 @@
 ;;
 (defun eliminate-connectors (cnf)
   (unless (null cnf)
-  	(cond
-  	  ((literal-p cnf) cnf)
-  	  ((equal (first cnf) +and+) (eliminate-connectors (rest cnf)))
-  	  (t (cons (mapcar #'eliminate-connectors (rest (first cnf)))
-               (eliminate-connectors (rest cnf)))))))
+    (let ((primero (first cnf))
+          (resto   (rest cnf)))
+    (cond ((equal primero +and+)
+            (mapcar #'eliminate-connectors resto))
+          ((equal primero +or+)
+            resto)
+          (t cnf)))))
 ;;
 ;; EJEMPLOS:
 ;;
