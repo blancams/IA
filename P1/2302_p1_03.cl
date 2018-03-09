@@ -542,7 +542,7 @@
 (defconstant +cond+   '=>)
 (defconstant +and+    '^)
 (defconstant +or+     'v)
-(defconstant +not+    '¬)
+(defconstant +not+    '~)
 
 (defun truth-value-p (x)
   (or (eql x T) (eql x NIL)))
@@ -850,10 +850,10 @@
   (when (wff-infix-p wff)
     (if (literal-p wff)
         wff
-      (let ((op1 (first wff))
-            (op2 (first (rest wff)))
-            (op3 (rest (rest wff)))
-            (funcion-aux (infix-to-prefix-eliminate-connectors-aux)))
+      (let* ((op1 (first wff))
+             (op2 (first (rest wff)))
+             (op3 (rest (rest wff)))
+             (funcion-aux (infix-to-prefix-eliminate-connectors-aux op3)))
         (cond
          ((unary-connector-p op1)
           (list op1
@@ -866,9 +866,7 @@
           (if (null op3)
               (infix-to-prefix op1)
             (cons op2
-                  (cons (infix-to-prefix op1)
-                        (mapcar #'infix-to-prefix
-                          (funcion-aux op3))))))
+                  (cons (infix-to-prefix op1) (mapcar #'infix-to-prefix funcion-aux)))))
          (t NIL))))))
 ;;
 ;; EJEMPLOS
@@ -1258,32 +1256,29 @@
 ;;
 (defun eliminate-connectors (cnf)
   (unless (null cnf)
-    (cond
-     ((literal-p cnf) cnf)
-     ((equal (first cnf) +and+) (eliminate-connectors (rest cnf)))
-     (t (cons (mapcar #'eliminate-connectors (rest (first cnf)))
-              (eliminate-connectors (rest cnf)))))))
+    (let ((primero (first cnf))
+          (resto   (rest cnf)))
+    (cond ((equal primero +and+)
+            (mapcar #'eliminate-connectors resto))
+          ((equal primero +or+)
+            resto)
+          (t cnf)))))
 ;;
 ;; EJEMPLOS:
 ;;
 ;; (eliminate-connectors 'nil) -> NIL
-;; (eliminate-connectors (cnf '(^ (v p  (~ q))  (v k  r  (^ m  n)))))
-;; -> ((P (~ Q)) (K R M) (K R N))
-;; (eliminate-connectors (cnf '(^ (v (~ a) b c) (~ e)
-;; (^ e f (~ g) h) (v m n) (^ r s q) (v u q) (^ x y))))
-;; -> (((~ A) B C) ((~ E)) (E) (F) ((~ G)) (H) (M N) (R) (S)
-;; (Q) (U Q) (X) (Y))
-;; (eliminate-connectors (cnf '(v p  q  (^ r  m)  (^ n  q)  s )))
-;; -> ((P Q R N S) (P Q R Q S) (P Q M N S) (P Q M Q S))
-;; (eliminate-connectors (print (cnf '(^ (v p  (~ q)) (~ a)
-;; (v k  r  (^ m  n)))))) -> ((P (~ Q)) ((~ A)) (K R M) (K R N))
+;; (eliminate-connectors (cnf '(^ (v p  (~ q))  (v k  r  (^ m  n))))) -> ((P (~ Q)) (K R M) (K R N))
+;; (eliminate-connectors (cnf '(^ (v (~ a) b c) (~ e) (^ e f (~ g) h) (v m n) (^ r s q) (v u q) (^ x y)))) ->
+;; (((~ A) B C) ((~ E)) (E) (F) ((~ G)) (H) (M N) (R) (S) (Q) (U Q) (X) (Y))
+;; (eliminate-connectors (cnf '(v p  q  (^ r  m)  (^ n  q)  s ))) ->
+;; ((P Q R N S) (P Q R Q S) (P Q M N S) (P Q M Q S))
+;; (eliminate-connectors (print (cnf '(^ (v p  (~ q)) (~ a) (v k  r  (^ m  n)))))) ->
+;; ((P (~ Q)) ((~ A)) (K R M) (K R N))
 ;; (eliminate-connectors '(^)) -> NIL
-;; (eliminate-connectors '(^ (v p (~ q)) (v) (v k r)))
-;; -> ((P (~ Q)) NIL (K R))
+;; (eliminate-connectors '(^ (v p (~ q)) (v) (v k r))) -> ((P (~ Q)) NIL (K R))
 ;; (eliminate-connectors '(^ (v a b))) -> ((A B))
 ;; (eliminate-connectors '(^ (v p (~ q)) (v k r))) -> ((P (~ Q)) (K R))
-;; (eliminate-connectors '(^ (v p (~ q)) (v q (~ a)) (v s e f) (v b)))
-;; -> ((P (~ Q)) (Q (~ A)) (S E F) (B))
+;; (eliminate-connectors '(^ (v p (~ q)) (v q (~ a)) (v s e f) (v b))) -> ((P (~ Q)) (Q (~ A)) (S E F) (B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -1462,8 +1457,8 @@
 ;;
 (defun eliminar-aux (k cnf)
   (unless (null cnf)
-    (let* ((primero       (first cnf))
-           (eliminar-sig  (eliminar-aux k (rest cnf))))
+    (let ((primero       (first cnf))
+          (eliminar-sig  (eliminar-aux k (rest cnf))))
       (if (null (subsume k primero))
           (cons primero
                 eliminar-sig)
