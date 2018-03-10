@@ -79,15 +79,26 @@
 (defparameter *planets* '(Avalon Davion Katril Kentares Mallory Proserpina Sirtis))
 
 (defparameter *white-holes*  
-  '((Avalon Mallory 6.4) (Avalon Proserpina 8.6)...))
+  '((Avalon Mallory 6.4) (Avalon Proserpina 8.6) 
+    (Davion Proserpina 5) (Davion Sirtis 6)
+    (Katril Davion 9) (Katril Mallory 10)
+    (Kentares Avalon 3) (Kentares Katril 10) (Kentares Proserpina 7)
+    (Mallory Katril 10) (Mallory Proserpina 15)
+    (Proserpina Avalon 8.6) (Proserpina Davion 5) (Proserpina Mallory 15) (Proserpina Sirtis 12)
+    (Sirtis Davion 6) (Sirtis Proserpina 12)))
 
 (defparameter *worm-holes*  
   '((Avalon Kentares 4) (Avalon Mallory 9)
     (Davion Katril 5) (Davion Sirtis 8)  
-    (Kentares Avalon 4) (Kentares Proserpina 12) ...))
+    (Kentares Avalon 4) (Kentares Proserpina 12)
+    (Mallory Avalon 9) (Mallory Katril 5) (Mallory Proserpina 11)
+    (Proserpina Kentares 12) (Proserpina Sirtis 9)
+    (Sirtis Davion 8) (Sirtis Katril 10) (Sirtis Proserpina 9)))
  
 (defparameter *sensors* 
-  '((Avalon 15) (Davion 5) ...))
+  '((Avalon 15) (Davion 5) (Katril 9)
+    (Kentares 14) (Mallory 12) (Proserpina 7)
+    (Sirtis 0)))
 
 (defparameter *planet-origin* 'Mallory)
 (defparameter *planets-destination* '(Sirtis))
@@ -112,7 +123,7 @@
 ;;    The cost (a number) or NIL if the state is not in the sensor list
 ;;
 (defun f-h-galaxy (state sensors)
-  ...)
+  (second (assoc state sensors)))
 
 (f-h-galaxy 'Sirtis *sensors*) ;-> 0
 (f-h-galaxy 'Avalon *sensors*) ;-> 15
@@ -129,13 +140,40 @@
 ;;
 ;; BEGIN: Exercise 2 -- Navigation operators
 ;;
-
+(defun navigate (name state holes planets-forbidden)
+  (unless (null holes)
+    (let ((primero      (first holes))
+          (navigate-sig (navigate name state (rest holes) planets-forbidden)))
+    (if (and (equal (first primero) state)
+             (not (some #'(lambda(x) (equal x (second primero))) planets-forbidden)))
+      (append (list (make-action :name name
+                                 :origin state 
+                                 :final (second primero)
+                                 :cost (third primero)))
+              navigate-sig)
+      navigate-sig))))
 
 (defun navigate-white-hole (state white-holes)
-  ...)
-
+  ; (unless (null white-holes)
+  ;   (if (equal (first (first white-holes)) state)
+  ;     (append (list (make-action :name 'navigate-white-hole
+  ;                          :origin state 
+  ;                          :final (second (first white-holes))
+  ;                          :cost (third (first white-holes))))
+  ;             (navigate-white-hole state (rest white-holes)))
+  ;     (navigate-white-hole state (rest white-holes)))))
+  (navigate 'navigate-white-hole state white-holes NIL))
+ 
 (defun navigate-worm-hole (state worm-holes planets-forbidden)
-  ...)
+  ; (unless (null worm-holes)
+  ;   (if (and (equal (first (first worm-holes)) state) (not (some #'(lambda(x) (equal x (second (first worm-holes)))) planets-forbidden)))
+  ;     (append (list (make-action :name 'navigate-worm-hole
+  ;                          :origin state 
+  ;                          :final (second (first worm-holes))
+  ;                          :cost (third (first worm-holes))))
+  ;             (navigate-worm-hole state (rest worm-holes) planets-forbidden))
+  ;     (navigate-worm-hole state (rest worm-holes) planets-forbidden))))
+  (navigate 'navigate-worm-hole state worm-holes planets-forbidden))
 
 
 (navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;-> 
@@ -169,7 +207,7 @@
 ;;
 
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory) 
-  ...)
+  )
 
 
 (defparameter node-01
@@ -217,7 +255,7 @@
 ;; BEGIN Exercise 5: Expand node
 ;;
 (defun expand-node (node problem)
-  ...)
+  )
 
 (expand-node (make-node :state 'Kentares :depth 0 :g 0 :f 0) *galaxy-M35*)
 ;;;(#S(NODE :STATE AVALON
@@ -282,7 +320,7 @@
 ;;;  BEGIN Exercise 6 -- Node list management
 ;;;  
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
-  ...)
+  )
 
 
 (defparameter node-01
@@ -367,7 +405,7 @@
 ;;;    BEGIN Exercise 8: Search algorithm
 ;;;
 (defun graph-search (problem strategy)
-  ...)
+  )
 
 
 ;
@@ -400,13 +438,13 @@
 ;;;    BEGIN Exercise 9: Solution path / action sequence
 ;;;
 (defun solution-path (node)
-  ...)
+  )
 
 (solution-path nil) ;;; -> NIL 
 (solution-path (a-star-search *galaxy-M35*))  ;;;-> (MALLORY ...)
 
 (defun action-sequence-aux (node)
-  ...)
+  )
 
 (action-sequence (a-star-search *galaxy-M35*))
 ;;; ->
@@ -429,7 +467,7 @@
    :node-compare-p #'depth-first-node-compare-p))
 
 (defun depth-first-node-compare-p (node-1 node-2)
-  ...)
+  )
 
 (solution-path (graph-search *galaxy-M35* *depth-first*))
 ;;; -> (MALLORY ... )
@@ -440,7 +478,7 @@
    :node-compare-p #'breadth-first-node-compare-p))
 
 (defun breadth-first-node-compare-p (node-1 node-2)
-  ...)
+  )
 
 (solution-path (graph-search *galaxy-M35* *breadth-first*))
 ;; -> (MALLORY ... )
