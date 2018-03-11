@@ -205,9 +205,22 @@
 ;;
 ;; BEGIN: Exercise 3 -- Goal test
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FEA DE COJONES LA FUNCION ;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun check-mandatory (node planets-mandatory)
+  (if (null planets-mandatory) ; los voy eliminando asi que si me quedo sin ellos es bien
+    t
+    (unless (null node) ; si me quedo sin nodos antes es malo
+      (let ((state  (node-state node))
+            (parent (node-parent node)))
+      (if (some #'(lambda(x) (equal x state))
+                 planets-mandatory)
+          (check-mandatory parent (remove state planets-mandatory)) ; elimino el planeta si ya he pasado por el
+          (check-mandatory parent planets-mandatory)))))) ; y si no pues a seguir intentandolo
 
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory) 
-  )
+  (when (some #'(lambda(x) (equal x (node-state node)))
+              planets-destination) ; para saber que hemos llegado a la meta al menos
+    (check-mandatory node (copy-list planets-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
 
 
 (defparameter node-01
