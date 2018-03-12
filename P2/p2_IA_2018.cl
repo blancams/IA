@@ -254,8 +254,12 @@
    :f-goal-test       #'(lambda (node) 
                           (f-goal-test-galaxy node *planets-destination*
                                                    *planets-mandatory*))
-   :f-h               ...
-   :operators         (list ...))) 
+   :f-h               #'(lambda(state) 
+                          (f-h-galaxy state *sensors*))
+   :operators         (list #'(lambda (state) 
+                                (navigate-white-hole state *white-holes*))
+                            #'(lambda (state)
+                                (navigate-worm-hole state *worm-holes* *planets-forbidden*))))) 
 
 ;;
 ;;  END: Exercise 4 -- Define the galaxy structure
@@ -267,8 +271,28 @@
 ;;
 ;; BEGIN Exercise 5: Expand node
 ;;
+
+;;;;;;;;;; Lo he tenido que separar en dos porque si no no se me ocurria otra
+; forma que no fuese un mapcar de un mapcar y temia muerte asegurada a manos de
+; Alberto.
+(defun expand (node problem actions)
+  (unless (null actions)
+    (append (mapcar #'(lambda(x) (let* ((state (action-final x))
+                                        (g     (+ (node-g node) (action-cost x)))
+                                        (h     (funcall (problem-f-h problem) state))) 
+                                   (make-node :state state
+                                              :parent node
+                                              :action x
+                                              :depth (+ (node-depth node) 1)
+                                              :g g
+                                              :h h
+                                              :f (+ g h))))
+                    (funcall (first actions) (node-state node)))
+            (expand node problem (rest actions)))))
+
 (defun expand-node (node problem)
-  )
+  (expand node problem (problem-operators problem)))
+  
 
 (expand-node (make-node :state 'Kentares :depth 0 :g 0 :f 0) *galaxy-M35*)
 ;;;(#S(NODE :STATE AVALON
