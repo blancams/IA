@@ -356,18 +356,39 @@
 ;;;
 ;;;  BEGIN Exercise 6 -- Node list management
 ;;;  
+(defun insert-sort (node lst-nodes comparison)
+  (if (null lst-nodes)
+    (list node)
+    (if (funcall comparison node (first lst-nodes))
+      (cons node 
+            lst-nodes)
+      (cons (first lst-nodes) 
+            (insert-sort node (rest lst-nodes) comparison)))))
+
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
-  )
+    (if (null nodes)
+      lst-nodes
+      (insert-nodes-strategy (rest nodes) 
+                             (insert-sort (first nodes) lst-nodes (strategy-node-compare-p strategy))
+                             strategy)))
 
-
+(defparameter node-00
+   (make-node :state 'Proserpina :depth 1 :g 20 :f 20) )
 (defparameter node-01
    (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
 (defparameter node-02
    (make-node :state 'Kentares :depth 2 :g 50 :f 50) )
+(defparameter lst-nodes-00
+   (list
+      (make-node :state 'Davion :depth 3 :g 10 :f 10)
+      (make-node :state 'Mallory :depth 3 :g 25 :f 25)
+      (make-node :state 'Katril :depth 3 :g 60 :f 60)))
 
-(print (insert-nodes-strategy (list node-00 node-01 node-02) 
-                        lst-nodes-00 
-                        *uniform-cost*));->
+(insert-nodes-strategy '(4 8 6 2) '(1 3 5 7) (make-strategy :name 'simple :node-compare-p #'<))
+
+; (print (insert-nodes-strategy (list node-00 node-01 node-02) 
+;                         lst-nodes-00 
+;                         *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
 ;;; #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
@@ -388,10 +409,10 @@
 ;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50)) 
 
 
-(print 
- (insert-nodes-strategy (list node-00 node-01 node-02) 
-                        (sort (copy-list lst-nodes-00) #'<= :key #'node-g) 
-                        *uniform-cost*));->
+; (print 
+;  (insert-nodes-strategy (list node-00 node-01 node-02) 
+;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g) 
+;                         *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
 ;;; #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
@@ -428,14 +449,18 @@
 ;;
 
 (defparameter *A-star*
-  (make-strategy ...))
+  (make-strategy
+    :name 'A-star-strategy
+    :node-compare-p #'(lambda (node1 node2) (< (node-f node1) (node-f node2)))))
 
 ;;
 ;; END: Exercise 7 -- Definition of the A* strategy
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+(insert-nodes-strategy (list node-00 node-01 node-02)
+                       (copy-list lst-nodes-00)
+                       *A-star*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 
