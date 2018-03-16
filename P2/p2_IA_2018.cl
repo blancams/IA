@@ -1,24 +1,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;    Lab assignment 2: Search
-;;    LAB GROUP: 
-;;    Couple:  
-;;    Author 1: 
+;;    LAB GROUP:
+;;    Couple:
+;;    Author 1:
 ;;    Author 2:
 ;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;    Problem definition
 ;;
 (defstruct problem
   states              ; List of states
   initial-state       ; Initial state
-  f-goal-test         ; reference to a function that determines whether 
-                      ; a state fulfills the goal 
-  f-h                 ; reference to a function that evaluates to the 
+  f-goal-test         ; reference to a function that determines whether
+                      ; a state fulfills the goal
+  f-h                 ; reference to a function that evaluates to the
                       ; value of the heuristic of a state
   operators)          ; list of operators (references to functions) to generate succesors
 ;;
@@ -26,23 +26,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;    Node in search tree
 ;;
-(defstruct node 
+(defstruct node
   state           ; state label
   parent          ; parent node
   action          ; action that generated the current node from its parent
   (depth 0)       ; depth in the search tree
   (g 0)           ; cost of the path from the initial state to this node
   (h 0)           ; value of the heurstic
-  (f 0))          ; g + h 
+  (f 0))          ; g + h
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;    Actions 
+;;
+;;    Actions
 ;;
 (defstruct action
   name              ; Name of the operator that generated the action
@@ -53,8 +53,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;    Search strategies 
+;;
+;;    Search strategies
 ;;
 (defstruct strategy
   name              ; name of the search strategy
@@ -64,22 +64,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;    END: Define structures
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;;    BEGIN: Define galaxy
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *planets* '(Avalon Davion Katril Kentares Mallory Proserpina Sirtis))
 
-(defparameter *white-holes*  
-  '((Avalon Mallory 6.4) (Avalon Proserpina 8.6) 
+(defparameter *white-holes*
+  '((Avalon Mallory 6.4) (Avalon Proserpina 8.6)
     (Davion Proserpina 5) (Davion Sirtis 6)
     (Katril Davion 9) (Katril Mallory 10)
     (Kentares Avalon 3) (Kentares Katril 10) (Kentares Proserpina 7)
@@ -87,27 +87,28 @@
     (Proserpina Avalon 8.6) (Proserpina Davion 5) (Proserpina Mallory 15) (Proserpina Sirtis 12)
     (Sirtis Davion 6) (Sirtis Proserpina 12)))
 
-(defparameter *worm-holes*  
+(defparameter *worm-holes*
   '((Avalon Kentares 4) (Avalon Mallory 9)
-    (Davion Katril 5) (Davion Sirtis 8)  
+    (Davion Katril 5) (Davion Sirtis 8)
+    (Katril Mallory 5) (Katril Davion 5) (Katril Sirtis 10)
     (Kentares Avalon 4) (Kentares Proserpina 12)
     (Mallory Avalon 9) (Mallory Katril 5) (Mallory Proserpina 11)
-    (Proserpina Kentares 12) (Proserpina Sirtis 9)
+    (Proserpina Kentares 12) (Proserpina Sirtis 9) (Proserpina Mallory 11)
     (Sirtis Davion 8) (Sirtis Katril 10) (Sirtis Proserpina 9)))
- 
-(defparameter *sensors* 
+
+(defparameter *sensors*
   '((Avalon 15) (Davion 5) (Katril 9)
     (Kentares 14) (Mallory 12) (Proserpina 7)
     (Sirtis 0)))
 
-(defparameter *planet-origin* 'Mallory)
+(defparameter *planet-origin* 'Katril)
 (defparameter *planets-destination* '(Sirtis))
 (defparameter *planets-forbidden*   '(Avalon))
-(defparameter *planets-mandatory*   '(Katril Proserpina))
+(defparameter *planets-mandatory*   '(Kentares Proserpina Mallory))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
 ;; BEGIN: Exercise 1 -- Evaluation of the heuristic
 ;;
 ;; Returns the value of the heuristics for a given state
@@ -147,7 +148,7 @@
     (if (and (equal (first primero) state)
              (not (some #'(lambda(x) (equal x (second primero))) planets-forbidden)))
       (append (list (make-action :name name
-                                 :origin state 
+                                 :origin state
                                  :final (second primero)
                                  :cost (third primero)))
               navigate-sig)
@@ -157,18 +158,18 @@
   ; (unless (null white-holes)
   ;   (if (equal (first (first white-holes)) state)
   ;     (append (list (make-action :name 'navigate-white-hole
-  ;                          :origin state 
+  ;                          :origin state
   ;                          :final (second (first white-holes))
   ;                          :cost (third (first white-holes))))
   ;             (navigate-white-hole state (rest white-holes)))
   ;     (navigate-white-hole state (rest white-holes)))))
   (navigate 'navigate-white-hole state white-holes NIL))
- 
+
 (defun navigate-worm-hole (state worm-holes planets-forbidden)
   ; (unless (null worm-holes)
   ;   (if (and (equal (first (first worm-holes)) state) (not (some #'(lambda(x) (equal x (second (first worm-holes)))) planets-forbidden)))
   ;     (append (list (make-action :name 'navigate-worm-hole
-  ;                          :origin state 
+  ;                          :origin state
   ;                          :final (second (first worm-holes))
   ;                          :cost (third (first worm-holes))))
   ;             (navigate-worm-hole state (rest worm-holes) planets-forbidden))
@@ -176,11 +177,11 @@
   (navigate 'navigate-worm-hole state worm-holes planets-forbidden))
 
 
-(navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;-> 
+(navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;->
 ;;;(#S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL KATRIL :COST 5)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL PROSERPINA :COST 11))
 
-(navigate-worm-hole 'Mallory *worm-holes* NIL)  ;-> 
+(navigate-worm-hole 'Mallory *worm-holes* NIL)  ;->
 ;;;(#S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL AVALON :COST 9)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL KATRIL :COST 5)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL PROSERPINA :COST 11))
@@ -217,7 +218,7 @@
           (check-mandatory parent (remove state planets-mandatory)) ; elimino el planeta si ya he pasado por el
           (check-mandatory parent planets-mandatory)))))) ; y si no pues a seguir intentandolo
 
-(defun f-goal-test-galaxy (node planets-destination planets-mandatory) 
+(defun f-goal-test-galaxy (node planets-destination planets-mandatory)
   (when (some #'(lambda(x) (equal x (node-state node)))
               planets-destination) ; para saber que hemos llegado a la meta al menos
     (check-mandatory node (copy-list planets-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
@@ -247,19 +248,19 @@
 ;;  BEGIN: Exercise 4 -- Define the galaxy structure
 ;;
 ;;
-(defparameter *galaxy-M35* 
-  (make-problem 
-   :states            *planets*          
+(defparameter *galaxy-M35*
+  (make-problem
+   :states            *planets*
    :initial-state     *planet-origin*
-   :f-goal-test       #'(lambda (node) 
+   :f-goal-test       #'(lambda (node)
                           (f-goal-test-galaxy node *planets-destination*
                                                    *planets-mandatory*))
-   :f-h               #'(lambda(state) 
+   :f-h               #'(lambda(state)
                           (f-h-galaxy state *sensors*))
-   :operators         (list #'(lambda (state) 
+   :operators         (list #'(lambda (state)
                                 (navigate-white-hole state *white-holes*))
                             #'(lambda (state)
-                                (navigate-worm-hole state *worm-holes* *planets-forbidden*))))) 
+                                (navigate-worm-hole state *worm-holes* *planets-forbidden*)))))
 
 ;;
 ;;  END: Exercise 4 -- Define the galaxy structure
@@ -279,7 +280,7 @@
   (unless (null actions)
     (append (mapcar #'(lambda(x) (let* ((state (action-final x))
                                         (g     (+ (node-g node) (action-cost x)))
-                                        (h     (funcall (problem-f-h problem) state))) 
+                                        (h     (funcall (problem-f-h problem) state)))
                                    (make-node :state state
                                               :parent node
                                               :action x
@@ -292,7 +293,7 @@
 
 (defun expand-node (node problem)
   (expand node problem (problem-operators problem)))
-  
+
 
 (expand-node (make-node :state 'Kentares :depth 0 :g 0 :f 0) *galaxy-M35*)
 ;;;(#S(NODE :STATE AVALON
@@ -355,20 +356,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;  BEGIN Exercise 6 -- Node list management
-;;;  
+;;;
 (defun insert-sort (node lst-nodes comparison)
   (if (null lst-nodes)
     (list node)
     (if (funcall comparison node (first lst-nodes))
-      (cons node 
+      (cons node
             lst-nodes)
-      (cons (first lst-nodes) 
+      (cons (first lst-nodes)
             (insert-sort node (rest lst-nodes) comparison)))))
 
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
     (if (null nodes)
       lst-nodes
-      (insert-nodes-strategy (rest nodes) 
+      (insert-nodes-strategy (rest nodes)
                              (insert-sort (first nodes) lst-nodes (strategy-node-compare-p strategy))
                              strategy)))
 
@@ -386,8 +387,8 @@
 
 (insert-nodes-strategy '(4 8 6 2) '(1 3 5 7) (make-strategy :name 'simple :node-compare-p #'<))
 
-; (print (insert-nodes-strategy (list node-00 node-01 node-02) 
-;                         lst-nodes-00 
+; (print (insert-nodes-strategy (list node-00 node-01 node-02)
+;                         lst-nodes-00
 ;                         *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
@@ -406,12 +407,12 @@
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL MALLORY :COST 16) :DEPTH 13 :G 26 :H 7 :F 33)
 ;;; #S(NODE :STATE SIRTIS :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL SIRTIS :COST 7) :DEPTH 13 :G 17 :H 0 :F 17)
-;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50)) 
+;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50))
 
 
-; (print 
-;  (insert-nodes-strategy (list node-00 node-01 node-02) 
-;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g) 
+; (print
+;  (insert-nodes-strategy (list node-00 node-01 node-02)
+;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g)
 ;                         *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
@@ -430,7 +431,7 @@
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL MALLORY :COST 17) :DEPTH 13 :G 27 :H 7 :F 34)
 ;;; #S(NODE :STATE KENTARES :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL KENTARES :COST 21) :DEPTH 13 :G 31 :H 4 :F 35)
-;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50)) 
+;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50))
 
 
 ;;
@@ -443,8 +444,8 @@
 ;;
 ;; BEGIN: Exercise 7 -- Definition of the A* strategy
 ;;
-;; A strategy is, basically, a comparison function between nodes to tell 
-;; us which nodes should be analyzed first. In the A* strategy, the first 
+;; A strategy is, basically, a comparison function between nodes to tell
+;; us which nodes should be analyzed first. In the A* strategy, the first
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
 
@@ -463,11 +464,57 @@
                        *A-star*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 
+;;;
 ;;;    BEGIN Exercise 8: Search algorithm
 ;;;
-(defun graph-search (problem strategy)
-  )
+(defun get-mandatory-node-in-path (node planet-mandatory)
+    (unless (null node)
+        (if (equal (node-state node) planet-mandatory)
+            (list planet-mandatory)
+            (get-mandatory-node-in-path (node-parent node) planet-mandatory))))
+
+
+(defun get-mandatory-nodes-in-path (node planets-mandatory)
+    (unless (null planets-mandatory)
+        (append (get-mandatory-node-in-path node (first planets-mandatory))
+                (get-mandatory-nodes-in-path node (rest planets-mandatory)))))
+
+
+(defun node-in-closed-list-p (node closed-nodes planets-mandatory)
+    (if (null closed-nodes)
+        t
+        (if (and (equal (node-state node)
+                        (node-state (first closed-nodes)))
+                 (equal (get-mandatory-nodes-in-path node planets-mandatory)
+                        (get-mandatory-nodes-in-path (first closed-nodes) planets-mandatory)))
+            (unless (>= (node-g node) (node-g (first closed-nodes)))
+                t)
+            (node-in-closed-list-p node (rest closed-nodes) planets-mandatory))))
+
+(defun graph-search-aux (problem strategy open-nodes closed-nodes planets-mandatory)
+    (unless (null open-nodes)
+        (let ((node (first open-nodes)))
+            (if (funcall (problem-f-goal-test problem) node)
+                node
+                (if (node-in-closed-list-p node closed-nodes planets-mandatory)
+                    (graph-search-aux problem
+                                      strategy
+                                      (insert-nodes-strategy (expand-node node problem) (rest open-nodes) strategy)
+                                      (cons node (remove-if #'(lambda (n) (equal (node-state node) (node-state n))) closed-nodes))
+                                      planets-mandatory)
+                    (graph-search-aux problem
+                                      strategy
+                                      (rest open-nodes)
+                                      closed-nodes
+                                      planets-mandatory))))))
+
+(defun graph-search (problem strategy planets-mandatory)
+    (let* ((root (problem-initial-state problem))
+           (root-h (funcall (problem-f-h problem) root))
+           (open-nodes (list (make-node :state root :h root-h :f root-h)))
+           (closed-nodes '()))
+        (graph-search-aux problem strategy open-nodes closed-nodes planets-mandatory)))
+
 
 
 ;
@@ -479,16 +526,16 @@
 (graph-search *galaxy-M35* *A-star*);->
 ;;;#S(NODE :STATE ...
 ;;;        :PARENT #S(NODE :STATE ...
-;;;                        :PARENT #S(NODE :STATE ...)) 
+;;;                        :PARENT #S(NODE :STATE ...))
 
 
 (print (a-star-search *galaxy-M35*));->
 ;;;#S(NODE :STATE ...
 ;;;        :PARENT #S(NODE :STATE ...
-;;;                        :PARENT #S(NODE :STATE ...)) 
+;;;                        :PARENT #S(NODE :STATE ...))
 
 
-;;; 
+;;;
 ;;;    END Exercise 8: Search algorithm
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -496,13 +543,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 
+;;;
 ;;;    BEGIN Exercise 9: Solution path / action sequence
 ;;;
 (defun solution-path (node)
   )
 
-(solution-path nil) ;;; -> NIL 
+(solution-path nil) ;;; -> NIL
 (solution-path (a-star-search *galaxy-M35*))  ;;;-> (MALLORY ...)
 
 (defun action-sequence-aux (node)
@@ -510,16 +557,16 @@
 
 (action-sequence (a-star-search *galaxy-M35*))
 ;;; ->
-;;;(#S(ACTION :NAME ...)) 
+;;;(#S(ACTION :NAME ...))
 
-;;; 
+;;;
 ;;;    END Exercise 9: Solution path / action sequence
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 
+;;;
 ;;;    BEGIN Exercise 10: depth-first / breadth-first
 ;;;
 
@@ -545,7 +592,7 @@
 (solution-path (graph-search *galaxy-M35* *breadth-first*))
 ;; -> (MALLORY ... )
 
-;;; 
+;;;
 ;;;    END Exercise 10: depth-first / breadth-first
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
