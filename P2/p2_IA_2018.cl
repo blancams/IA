@@ -14,13 +14,15 @@
 ;;    Problem definition
 ;;
 (defstruct problem
-  states              ; List of states
-  initial-state       ; Initial state
-  f-goal-test         ; reference to a function that determines whether
-                      ; a state fulfills the goal
-  f-h                 ; reference to a function that evaluates to the
-                      ; value of the heuristic of a state
-  operators)          ; list of operators (references to functions) to generate succesors
+  states               ; List of states
+  initial-state        ; Initial state
+  f-goal-test          ; reference to a function that determines whether
+                       ; a state fulfills the goal
+  f-h                  ; reference to a function that evaluates to the
+                       ; value of the heuristic of a state
+  f-search-state-equal ; reference to a predicate that determines whether
+                       ; two nodes are equal, in terms of their search state
+  operators)           ; list of operators (references to functions) to generate succesors
 ;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -204,7 +206,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; BEGIN: Exercise 3 -- Goal test
+;; BEGIN: Exercise 3A -- Goal test
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FEA DE COJONES LA FUNCION ;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun check-mandatory (node planets-mandatory)
@@ -223,7 +225,6 @@
               planets-destination) ; para saber que hemos llegado a la meta al menos
     (check-mandatory node (copy-list planets-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
 
-
 (defparameter node-01
    (make-node :state 'Avalon) )
 (defparameter node-02
@@ -232,14 +233,58 @@
    (make-node :state 'Katril :parent node-02))
 (defparameter node-04
    (make-node :state 'Kentares :parent node-03))
+
 (f-goal-test-galaxy node-01 '(kentares urano) '(Avalon Katril)); -> NIL
 (f-goal-test-galaxy node-02 '(kentares urano) '(Avalon Katril)); -> NIL
 (f-goal-test-galaxy node-03 '(kentares urano) '(Avalon Katril)); -> NIL
 (f-goal-test-galaxy node-04 '(kentares urano) '(Avalon Katril)); -> T
-
-
 ;;
-;; END: Exercise 3 -- Goal test
+;; END: Exercise 3A -- Goal test
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; BEGIN: Exercise 3B -- Equality between search states
+;;
+(defun pending-mandatory-planets (node planets-mandatory)
+    (if (or (null node) (null planets-mandatory))
+        planets-mandatory
+        (let ((state (node-state node))
+              (parent (node-parent node)))
+            (if (some #'(lambda (planet) (equal planet state)) planets-mandatory)
+                    (pending-mandatory-planets parent (remove state planets-mandatory))
+                (pending-mandatory-planets parent planets-mandatory)))))
+
+(defun pending-mandatory-planets-p (node-1 node-2 planets-mandatory)
+    (let ((pending-1 (pending-mandatory-planets node-1 planets-mandatory))
+          (pending-2 (pending-mandatory-planets node-2 planets-mandatory)))
+        (when (and (subsetp pending-1 pending-2 :test 'equal)
+                   (subsetp pending-2 pending-1 :test 'equal))
+            t)))
+
+(defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
+    (let ((equal-state (equal (node-state node-1)
+                              (node-state node-2))))
+        (if (null planets-mandatory)
+              equal-state
+            (and equal-state
+                 (pending-mandatory-planets-p node-1
+                                              node-2
+                                              planets-mandatory)))))
+(f-search-state-equal-galaxy node-01 node-01) ;-> T
+(f-search-state-equal-galaxy node-01 node-02) ;-> NIL
+(f-search-state-equal-galaxy node-02 node-04) ;-> T
+
+(f-search-state-equal-galaxy node-01 node-01 '(Avalon)) ;-> T
+(f-search-state-equal-galaxy node-01 node-02 '(Avalon)) ;-> NIL
+(f-search-state-equal-galaxy node-02 node-04 '(Avalon)) ;-> T
+
+(f-search-state-equal-galaxy node-01 node-01 '(Avalon Katril)) ;-> T
+(f-search-state-equal-galaxy node-01 node-02 '(Avalon Katril)) ;-> NIL
+(f-search-state-equal-galaxy node-02 node-04 '(Avalon Katril)) ;-> NIL
+;;
+;; END: Exercise 3B -- Equality between search states
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -250,17 +295,19 @@
 ;;
 (defparameter *galaxy-M35*
   (make-problem
-   :states            *planets*
-   :initial-state     *planet-origin*
-   :f-goal-test       #'(lambda (node)
-                          (f-goal-test-galaxy node *planets-destination*
-                                                   *planets-mandatory*))
-   :f-h               #'(lambda(state)
-                          (f-h-galaxy state *sensors*))
-   :operators         (list #'(lambda (state)
-                                (navigate-white-hole state *white-holes*))
-                            #'(lambda (state)
-                                (navigate-worm-hole state *worm-holes* *planets-forbidden*)))))
+   :states                *planets*
+   :initial-state         *planet-origin*
+   :f-goal-test           #'(lambda (node)
+                              (f-goal-test-galaxy node *planets-destination*
+                                                       *planets-mandatory*))
+   :f-h                   #'(lambda(state)
+                            (f-h-galaxy state *sensors*))
+   :f-search-state-equal  #'(lambda(node-1 node-2)
+                            (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*))
+   :operators             (list #'(lambda (state)
+                                    (navigate-white-hole state *white-holes*))
+                                #'(lambda (state)
+                                    (navigate-worm-hole state *worm-holes* *planets-forbidden*)))))
 
 ;;
 ;;  END: Exercise 4 -- Define the galaxy structure
@@ -295,58 +342,42 @@
   (expand node problem (problem-operators problem)))
 
 
-(expand-node (make-node :state 'Kentares :depth 0 :g 0 :f 0) *galaxy-M35*)
+(defparameter node-00
+  (make-node :state 'Proserpina :depth 12 :g 10 :f 20))
+
+(defparameter lst-nodes-00
+  (expand-node node-00 *galaxy-M35*))
+
+(print lst-nodes-00)
+
 ;;;(#S(NODE :STATE AVALON
-;;;         :PARENT #S(NODE :STATE KENTARES
-;;;                         :PARENT NIL
-;;;                         :ACTION NIL
-;;;                         :DEPTH 0
-;;;                         :G ...)
-;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE
-;;;                           :ORIGIN KENTARES
-;;;                           :FINAL AVALON
-;;;                           :COST 3)
-;;;         :DEPTH 1
-;;;         :G ...)
-;;; #S(NODE :STATE KATRIL
-;;;         :PARENT #S(NODE :STATE KENTARES
-;;;                         :PARENT NIL
-;;;                         :ACTION NIL
-;;;                         :DEPTH 0
-;;;                         :G ...)
-;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE
-;;;                           :ORIGIN KENTARES
-;;;                           :FINAL KATRIL
-;;;                           :COST 10)
-;;;         :DEPTH 1
-;;;         :G ...)
-;;; #S(NODE :STATE PROSERPINA
-;;;         :PARENT #S(NODE :STATE KENTARES
-;;;                         :PARENT NIL
-;;;                         :ACTION NIL
-;;;                         :DEPTH 0
-;;;                         :G ...)
-;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE
-;;;                           :ORIGIN KENTARES
-;;;                           :FINAL PROSERPINA
-;;;                           :COST 7)
-;;;         :DEPTH 1
-;;;         :G ...)
-;;; #S(NODE :STATE PROSERPINA
-;;;         :PARENT #S(NODE :STATE KENTARES
-;;;                         :PARENT NIL
-;;;                         :ACTION NIL
-;;;                         :DEPTH 0
-;;;                         :G ...)
-;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE
-;;;                           :ORIGIN KENTARES
-;;;                           :FINAL PROSERPINA
-;;;                           :COST 12)
-;;;         :DEPTH 1
-;;;         :G ...))
-
-
-
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL AVALON :COST 8.6)
+;;;         :DEPTH 13 :G 18.6 :H 15 :F 33.6)
+;;; #S(NODE :STATE DAVION
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL DAVION :COST 5)
+;;;         :DEPTH 13 :G 15 :H 5 :F 20)
+;;; #S(NODE :STATE MALLORY
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL MALLORY :COST 15)
+;;;         :DEPTH 13 :G 25 :H 12 :F 37)
+;;; #S(NODE :STATE SIRTIS
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL SIRTIS :COST 12)
+;;;         :DEPTH 13 :G 22 :H 0 :F 22)
+;;; #S(NODE :STATE KENTARES
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL KENTARES :COST 12)
+;;;         :DEPTH 13 :G 22 :H 14 :F 36)
+;;; #S(NODE :STATE SIRTIS
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL SIRTIS :COST 9)
+;;;         :DEPTH 13 :G 19 :H 0 :F 19)
+;;; #S(NODE :STATE MALLORY
+;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
+;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL MALLORY :COST 11)
+;;;         :DEPTH 13 :G 21 :H 12 :F 33))
 ;;
 ;; END Exercise 5: Expand node
 ;;
@@ -373,11 +404,11 @@
                              (insert-sort (first nodes) lst-nodes (strategy-node-compare-p strategy))
                              strategy)))
 
-(defparameter node-00
+(defparameter node-000
    (make-node :state 'Proserpina :depth 1 :g 20 :f 20) )
-(defparameter node-01
+(defparameter node-001
    (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
-(defparameter node-02
+(defparameter node-002
    (make-node :state 'Kentares :depth 2 :g 50 :f 50) )
 (defparameter lst-nodes-00
    (list
@@ -387,7 +418,7 @@
 
 (insert-nodes-strategy '(4 8 6 2) '(1 3 5 7) (make-strategy :name 'simple :node-compare-p #'<))
 
-; (print (insert-nodes-strategy (list node-00 node-01 node-02)
+; (print (insert-nodes-strategy (list node-000 node-001 node-002)
 ;                         lst-nodes-00
 ;                         *uniform-cost*));->
 ;;;
@@ -411,7 +442,7 @@
 
 
 ; (print
-;  (insert-nodes-strategy (list node-00 node-01 node-02)
+;  (insert-nodes-strategy (list node-000 node-001 node-002)
 ;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g)
 ;                         *uniform-cost*));->
 ;;;
@@ -459,7 +490,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(insert-nodes-strategy (list node-00 node-01 node-02)
+(insert-nodes-strategy (list node-000 node-001 node-002)
                        (copy-list lst-nodes-00)
                        *A-star*)
 
