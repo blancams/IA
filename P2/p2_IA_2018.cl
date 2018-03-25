@@ -209,21 +209,29 @@
 ;; BEGIN: Exercise 3A -- Goal test
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FEA DE COJONES LA FUNCION ;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun check-mandatory (node planets-mandatory)
-  (if (null planets-mandatory) ; los voy eliminando asi que si me quedo sin ellos es bien
-    t
-    (unless (null node) ; si me quedo sin nodos antes es malo
-      (let ((state  (node-state node))
-            (parent (node-parent node)))
-      (if (some #'(lambda(x) (equal x state))
-                 planets-mandatory)
-          (check-mandatory parent (remove state planets-mandatory)) ; elimino el planeta si ya he pasado por el
-          (check-mandatory parent planets-mandatory)))))) ; y si no pues a seguir intentandolo
+(defun get-pending-mandatory (node planets-mandatory)
+  (if (or (null node) 
+          (null planets-mandatory))
+    planets-mandatory
+    (let ((pending (member (node-state node) planets-mandatory))
+          (parent  (node-parent node)))
+      (if pending
+        (get-pending-mandatory parent pending)
+        (get-pending-mandatory parent planets-mandatory)))))
+
+; (defun check-mandatory (node planets-mandatory)
+;   (if (null planets-mandatory) ; los voy eliminando asi que si me quedo sin ellos es bien
+;     t
+;     (unless (null node) ; si me quedo sin nodos antes es malo
+;       (let ((pending (member (node-state node) planets-mandatory))
+;             (parent (node-parent node)))
+;       (if pending
+;           (check-mandatory parent (remove state planets-mandatory)) ; elimino el planeta si ya he pasado por el
+;           (check-mandatory parent planets-mandatory)))))) ; y si no pues a seguir intentandolo
 
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory)
-  (when (some #'(lambda(x) (equal x (node-state node)))
-              planets-destination) ; para saber que hemos llegado a la meta al menos
-    (check-mandatory node (copy-list planets-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
+  (when (member (node-state node) planets-destination) ; para saber que hemos llegado a la meta al menos
+    (null (get-pending-mandatory node planet-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
 
 (defparameter node-01
    (make-node :state 'Avalon) )
@@ -247,31 +255,40 @@
 ;;
 ;; BEGIN: Exercise 3B -- Equality between search states
 ;;
-(defun pending-mandatory-planets (node planets-mandatory)
-    (if (or (null node) (null planets-mandatory))
-        planets-mandatory
-        (let ((state (node-state node))
-              (parent (node-parent node)))
-            (if (some #'(lambda (planet) (equal planet state)) planets-mandatory)
-                    (pending-mandatory-planets parent (remove state planets-mandatory))
-                (pending-mandatory-planets parent planets-mandatory)))))
+; (defun pending-mandatory-planets (node planets-mandatory)
+;     (if (or (null node) (null planets-mandatory))
+;         planets-mandatory
+;         (let ((state (node-state node))
+;               (parent (node-parent node)))
+;             (if (some #'(lambda (planet) (equal planet state)) planets-mandatory)
+;                     (pending-mandatory-planets parent (remove state planets-mandatory))
+;                 (pending-mandatory-planets parent planets-mandatory)))))
 
-(defun pending-mandatory-planets-p (node-1 node-2 planets-mandatory)
-    (let ((pending-1 (pending-mandatory-planets node-1 planets-mandatory))
-          (pending-2 (pending-mandatory-planets node-2 planets-mandatory)))
-        (when (and (subsetp pending-1 pending-2 :test 'equal)
-                   (subsetp pending-2 pending-1 :test 'equal))
-            t)))
+; (defun pending-mandatory-planets-p (node-1 node-2 planets-mandatory)
+;     (let ((pending-1 (pending-mandatory-planets node-1 planets-mandatory))
+;           (pending-2 (pending-mandatory-planets node-2 planets-mandatory)))
+;         (when (and (subsetp pending-1 pending-2 :test 'equal)
+;                    (subsetp pending-2 pending-1 :test 'equal))
+;             t)))
+
+; (defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
+;     (let ((equal-state (equal (node-state node-1)
+;                               (node-state node-2))))
+;         (if (null planets-mandatory)
+;               equal-state
+;             (and equal-state
+;                  (pending-mandatory-planets-p node-1
+;                                               node-2
+;                                               planets-mandatory)))))
+
 
 (defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
-    (let ((equal-state (equal (node-state node-1)
-                              (node-state node-2))))
-        (if (null planets-mandatory)
-              equal-state
-            (and equal-state
-                 (pending-mandatory-planets-p node-1
-                                              node-2
-                                              planets-mandatory)))))
+  (when (equal (node-state node-1)
+               (node-state node-2))
+    (or (null planets-mandatory)
+        (equal (get-pending-mandatory node-1 planets-mandatory)
+               (get-pending-mandatory node-2 planets-mandatory)))))
+
 (f-search-state-equal-galaxy node-01 node-01) ;-> T
 (f-search-state-equal-galaxy node-01 node-02) ;-> NIL
 (f-search-state-equal-galaxy node-02 node-04) ;-> T
@@ -301,9 +318,9 @@
                               (f-goal-test-galaxy node *planets-destination*
                                                        *planets-mandatory*))
    :f-h                   #'(lambda(state)
-                            (f-h-galaxy state *sensors*))
+                              (f-h-galaxy state *sensors*))
    :f-search-state-equal  #'(lambda(node-1 node-2)
-                            (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*))
+                              (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*))
    :operators             (list #'(lambda (state)
                                     (navigate-white-hole state *white-holes*))
                                 #'(lambda (state)
