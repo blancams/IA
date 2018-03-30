@@ -113,6 +113,11 @@
 ;;
 ;; BEGIN: Exercise 1 -- Evaluation of the heuristic
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; f-h-galaxy
+;;
 ;; Returns the value of the heuristics for a given state
 ;;
 ;;  Input:
@@ -127,12 +132,16 @@
 ;;
 (defun f-h-galaxy (state sensors)
   (second (assoc state sensors)))
+;;
+;; EXAMPLES:
+;;
+;; (f-h-galaxy 'Sirtis *sensors*) ;-> 0
+;; (f-h-galaxy 'Avalon *sensors*) ;-> 15
+;; (f-h-galaxy 'Earth  *sensors*) ;-> NIL
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(f-h-galaxy 'Sirtis *sensors*) ;-> 0
-(f-h-galaxy 'Avalon *sensors*) ;-> 15
-(f-h-galaxy 'Earth  *sensors*) ;-> NIL
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; END: Exercise 1 -- Evaluation of the heuristic
 ;;
@@ -142,6 +151,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; BEGIN: Exercise 2 -- Navigation operators
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; navigate
+;;
+;; Returns the list of actions that can be executed from one state using
+;; one operator.
+;;
+;;  Input: name : the action's name (vis. the operator)
+;;         state: the current state (vis. the planet we are on)
+;;         holes: a holes list, that is a list of threes
+;;                where the first element is the name of a state, 
+;;                the second the name of the final state, and the third
+;;                a number estimating the cost to reach the goal.
+;;         planets-forbidden: a list containing the forbidden planets.
+;;
+;;  Returns:
+;;    A list with the possible actions or NIL if no action can be executed.
 ;;
 (defun navigate (name state holes planets-forbidden)
   (unless (null holes)
@@ -155,7 +183,24 @@
                                  :cost (third primero)))
               navigate-sig)
       navigate-sig))))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; navigate-white-hole
+;;
+;; Returns the list of actions that can be executed from one state using
+;; white holes.
+;;
+;;  Input: state      : the current state (vis. the planet we are on)
+;;         white-holes: a holes list, that is a list of threes
+;;                      where the first element is the name of a state, 
+;;                      the second the name of the final state, and the third
+;;                      a number estimating the cost to reach the goal.
+;;
+;;  Returns:
+;;    A list with the possible actions or NIL if no action can be executed.
+;;
 (defun navigate-white-hole (state white-holes)
   ; (unless (null white-holes)
   ;   (if (equal (first (first white-holes)) state)
@@ -166,7 +211,32 @@
   ;             (navigate-white-hole state (rest white-holes)))
   ;     (navigate-white-hole state (rest white-holes)))))
   (navigate 'navigate-white-hole state white-holes NIL))
+;;
+;; EXAMPLES:
+;;
+;; (navigate-white-hole 'Kentares *white-holes*) ;->
+;;;(#S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL AVALON :COST 3)
+;;; #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL KATRIL :COST 10)
+;;; #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL PROSERPINA :COST 7))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; navigate-worm-hole
+;;
+;; Returns the list of actions that can be executed from one state using
+;; worm holes.
+;;
+;;  Input: state     : the current state (vis. the planet we are on)
+;;         worm-holes: a holes list, that is a list of threes
+;;                     where the first element is the name of a state, 
+;;                     the second the name of the final state, and the third
+;;                     a number estimating the cost to reach the goal.
+;;         planets-forbidden: a list containing the forbidden planets.
+;;
+;;  Returns:
+;;    A list with the possible actions or NIL if no action can be executed.
+;;
 (defun navigate-worm-hole (state worm-holes planets-forbidden)
   ; (unless (null worm-holes)
   ;   (if (and (equal (first (first worm-holes)) state) (not (some #'(lambda(x) (equal x (second (first worm-holes)))) planets-forbidden)))
@@ -177,27 +247,23 @@
   ;             (navigate-worm-hole state (rest worm-holes) planets-forbidden))
   ;     (navigate-worm-hole state (rest worm-holes) planets-forbidden))))
   (navigate 'navigate-worm-hole state worm-holes planets-forbidden))
-
-
-(navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;->
+;;
+;; EXAMPLES:
+;;
+;; (navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;->
 ;;;(#S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL KATRIL :COST 5)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL PROSERPINA :COST 11))
-
-(navigate-worm-hole 'Mallory *worm-holes* NIL)  ;->
+;;
+;; (navigate-worm-hole 'Mallory *worm-holes* NIL)  ;->
 ;;;(#S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL AVALON :COST 9)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL KATRIL :COST 5)
 ;;; #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN MALLORY :FINAL PROSERPINA :COST 11))
+;;
+;;(navigate-worm-hole 'Uranus *worm-holes* *planets-forbidden*)  ;-> NIL
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(navigate-white-hole 'Kentares *white-holes*) ;->
-;;;(#S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL AVALON :COST 3)
-;;; #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL KATRIL :COST 10)
-;;; #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN KENTARES :FINAL PROSERPINA :COST 7))
-
-
-(navigate-worm-hole 'Uranus *worm-holes* *planets-forbidden*)  ;-> NIL
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; END: Exercise 2 -- Navigation operators
 ;;
@@ -208,7 +274,21 @@
 ;;
 ;; BEGIN: Exercise 3A -- Goal test
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FEA DE COJONES LA FUNCION ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get-pending-mandatory
+;;
+;; Returns the list of mandatory states that have yet to be visited.
+;;
+;;  Input: node             : the current node (vis. the planet we are on)
+;;         planets-mandatory: a list containing the names of the mandatory
+;;                            states that has to be visited.
+;;
+;;  Returns:
+;;    A list with the mandatory states not visited or NIL if all mandatory
+;;    states have been visited.
+;;
 (defun get-pending-mandatory (node planets-mandatory)
   (if (or (null node) 
           (null planets-mandatory))
@@ -218,6 +298,9 @@
       (if pending
         (get-pending-mandatory parent pending)
         (get-pending-mandatory parent planets-mandatory)))))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ; (defun check-mandatory (node planets-mandatory)
 ;   (if (null planets-mandatory) ; los voy eliminando asi que si me quedo sin ellos es bien
@@ -229,23 +312,44 @@
 ;           (check-mandatory parent (remove state planets-mandatory)) ; elimino el planeta si ya he pasado por el
 ;           (check-mandatory parent planets-mandatory)))))) ; y si no pues a seguir intentandolo
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; f-goal-test-galaxy
+;;
+;; Evaluates if the current node is the goal.
+;;
+;;  Input: node : the current node (vis. the planet we are on)
+;;         planets-destination: a list containing the names of the 
+;;                              destination planets.
+;;         planets-mandatory  : a list containing the names of the 
+;;                              mandatory states that has to be visited.
+;;
+;;  Returns:
+;;    T if the node is the goal, NIL if it is not.
+;;
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory)
   (when (member (node-state node) planets-destination) ; para saber que hemos llegado a la meta al menos
     (null (get-pending-mandatory node planet-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
+;;
+;; EXAMPLES: 
+;; 
+;; (defparameter node-01
+;;    (make-node :state 'Avalon) )
+;; (defparameter node-02
+;;    (make-node :state 'Kentares :parent node-01))
+;; (defparameter node-03
+;;    (make-node :state 'Katril :parent node-02))
+;; (defparameter node-04
+;;    (make-node :state 'Kentares :parent node-03))
+;;
+;; (f-goal-test-galaxy node-01 '(kentares urano) '(Avalon Katril)); -> NIL
+;; (f-goal-test-galaxy node-02 '(kentares urano) '(Avalon Katril)); -> NIL
+;; (f-goal-test-galaxy node-03 '(kentares urano) '(Avalon Katril)); -> NIL
+;; (f-goal-test-galaxy node-04 '(kentares urano) '(Avalon Katril)); -> T
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter node-01
-   (make-node :state 'Avalon) )
-(defparameter node-02
-   (make-node :state 'Kentares :parent node-01))
-(defparameter node-03
-   (make-node :state 'Katril :parent node-02))
-(defparameter node-04
-   (make-node :state 'Kentares :parent node-03))
 
-(f-goal-test-galaxy node-01 '(kentares urano) '(Avalon Katril)); -> NIL
-(f-goal-test-galaxy node-02 '(kentares urano) '(Avalon Katril)); -> NIL
-(f-goal-test-galaxy node-03 '(kentares urano) '(Avalon Katril)); -> NIL
-(f-goal-test-galaxy node-04 '(kentares urano) '(Avalon Katril)); -> T
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; END: Exercise 3A -- Goal test
 ;;
@@ -255,6 +359,8 @@
 ;;
 ;; BEGIN: Exercise 3B -- Equality between search states
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; (defun pending-mandatory-planets (node planets-mandatory)
 ;     (if (or (null node) (null planets-mandatory))
 ;         planets-mandatory
@@ -281,25 +387,45 @@
 ;                                               node-2
 ;                                               planets-mandatory)))))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; f-search-state-equal-galaxy
+;;
+;; Evaluates if two nodes are equal.
+;;
+;;  Input: node-1 : first node to compare
+;;         node-2 : second node to compare
+;;         [planets-mandatory]  : a list containing the names of the 
+;;                                mandatory states that has to be visited.
+;;                                Two nodes are equal if they have visited 
+;;                                the same list of mandatory planets.
+;;
+;;  Returns:
+;;    T if the two nodes are equal, NIL if they are not.
+;;
 (defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
   (when (equal (node-state node-1)
                (node-state node-2))
     (or (null planets-mandatory)
         (equal (get-pending-mandatory node-1 planets-mandatory)
                (get-pending-mandatory node-2 planets-mandatory)))))
+;;
+;; EXAMPLES:
+;;
+;; (f-search-state-equal-galaxy node-01 node-01) ;-> T
+;; (f-search-state-equal-galaxy node-01 node-02) ;-> NIL
+;; (f-search-state-equal-galaxy node-02 node-04) ;-> T
+;; 
+;; (f-search-state-equal-galaxy node-01 node-01 '(Avalon)) ;-> T
+;; (f-search-state-equal-galaxy node-01 node-02 '(Avalon)) ;-> NIL
+;; (f-search-state-equal-galaxy node-02 node-04 '(Avalon)) ;-> T
+;;
+;; (f-search-state-equal-galaxy node-01 node-01 '(Avalon Katril)) ;-> T
+;; (f-search-state-equal-galaxy node-01 node-02 '(Avalon Katril)) ;-> NIL
+;; (f-search-state-equal-galaxy node-02 node-04 '(Avalon Katril)) ;-> NIL
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(f-search-state-equal-galaxy node-01 node-01) ;-> T
-(f-search-state-equal-galaxy node-01 node-02) ;-> NIL
-(f-search-state-equal-galaxy node-02 node-04) ;-> T
-
-(f-search-state-equal-galaxy node-01 node-01 '(Avalon)) ;-> T
-(f-search-state-equal-galaxy node-01 node-02 '(Avalon)) ;-> NIL
-(f-search-state-equal-galaxy node-02 node-04 '(Avalon)) ;-> T
-
-(f-search-state-equal-galaxy node-01 node-01 '(Avalon Katril)) ;-> T
-(f-search-state-equal-galaxy node-01 node-02 '(Avalon Katril)) ;-> NIL
-(f-search-state-equal-galaxy node-02 node-04 '(Avalon Katril)) ;-> NIL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; END: Exercise 3B -- Equality between search states
 ;;
@@ -336,12 +462,23 @@
 ;;
 ;; BEGIN Exercise 5: Expand node
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;; Lo he tenido que separar en dos porque si no no se me ocurria otra
-; forma que no fuese un mapcar de un mapcar y temia muerte asegurada a manos de
-; Alberto.
-(defun expand (node problem actions)
-  (unless (null actions)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; expand
+;;
+;; Returns the expansion of a node given a problem and a list of actions.
+;;
+;;  Input: node   : the current node (vis. the planet we are on)
+;;         problem: the problem we are solving.
+;;         actions: list of actions that can be executed to expand the node.
+;;
+;;  Returns:
+;;    A list of nodes accessibles from the node given navigating using the
+;;    actions given.
+;;
+(defun expand (node problem operators)
+  (unless (null operators)
     (append (mapcar #'(lambda(x) (let* ((state (action-final x))
                                         (g     (+ (node-g node) (action-cost x)))
                                         (h     (funcall (problem-f-h problem) state)))
@@ -352,21 +489,35 @@
                                               :g g
                                               :h h
                                               :f (+ g h))))
-                    (funcall (first actions) (node-state node)))
-            (expand node problem (rest actions)))))
+                    (funcall (first operators) (node-state node)))
+            (expand node problem (rest operators)))))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; expand-node
+;;
+;; Returns the expansion of a node
+;;
+;;  Input: node   : the current node (vis. the planet we are on)
+;;         problem: the problem we are solving.
+;;
+;;  Returns:
+;;    A list of nodes accessibles from the node given navigating using the
+;;    operators of the problem.
+;;
 (defun expand-node (node problem)
   (expand node problem (problem-operators problem)))
-
-
-(defparameter node-00
-  (make-node :state 'Proserpina :depth 12 :g 10 :f 20))
-
-(defparameter lst-nodes-00
-  (expand-node node-00 *galaxy-M35*))
-
-(print lst-nodes-00)
-
+;;
+;; EXAMPLES:
+;;
+;; (defparameter node-00
+;;   (make-node :state 'Proserpina :depth 12 :g 10 :f 20))
+;;
+;;(defparameter lst-nodes-00
+;;  (expand-node node-00 *galaxy-M35*))
+;;
+;;(print lst-nodes-00) ->
 ;;;(#S(NODE :STATE AVALON
 ;;;         :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WHITE-HOLE :ORIGIN PROSERPINA :FINAL AVALON :COST 8.6)
@@ -396,15 +547,35 @@
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL MALLORY :COST 11)
 ;;;         :DEPTH 13 :G 21 :H 12 :F 33))
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; END Exercise 5: Expand node
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;;  BEGIN Exercise 6 -- Node list management
-;;;
+;;
+;;  BEGIN Exercise 6 -- Node list management
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; insert-sort
+;;
+;; Inserts a node in a list of nodes acording to a given comparison
+;; between nodes.
+;;
+;;  Input: node      : node to be inserted.
+;;         lst-nodes : list of ordered nodes.
+;;         comparison: comparison criteria for the insertion.
+;;
+;;  Returns:
+;;    A list of ordered nodes result of the insertion of the node in 
+;;    the list of nodes.
+;;
 (defun insert-sort (node lst-nodes comparison)
   (if (null lst-nodes)
     (list node)
@@ -413,31 +584,49 @@
             lst-nodes)
       (cons (first lst-nodes)
             (insert-sort node (rest lst-nodes) comparison)))))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; insert-nodes-strategy
+;;
+;; Inserts a list of nodes in an ordered list of nodes following a 
+;; given strategy.
+;;
+;;  Input: nodes    : list of nodes to be inserted.
+;;         lst-nodes: list of ordered nodes.
+;;         strategy : strategy to be followed in the insertion. lst-nodes
+;;                    is also supposed to be ordered following this strategy.
+;;
+;;  Returns:
+;;    A list of ordered nodes result of the insertion.
+;;
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
     (if (null nodes)
       lst-nodes
       (insert-nodes-strategy (rest nodes)
                              (insert-sort (first nodes) lst-nodes (strategy-node-compare-p strategy))
                              strategy)))
-
-(defparameter node-000
-   (make-node :state 'Proserpina :depth 1 :g 20 :f 20) )
-(defparameter node-001
-   (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
-(defparameter node-002
-   (make-node :state 'Kentares :depth 2 :g 50 :f 50) )
-(defparameter lst-nodes-00
-   (list
-      (make-node :state 'Davion :depth 3 :g 10 :f 10)
-      (make-node :state 'Mallory :depth 3 :g 25 :f 25)
-      (make-node :state 'Katril :depth 3 :g 60 :f 60)))
-
-(insert-nodes-strategy '(4 8 6 2) '(1 3 5 7) (make-strategy :name 'simple :node-compare-p #'<))
-
-; (print (insert-nodes-strategy (list node-000 node-001 node-002)
-;                         lst-nodes-00
-;                         *uniform-cost*));->
+;;
+;; EXAMPLES:
+;;
+;; (defparameter node-000
+;;    (make-node :state 'Proserpina :depth 1 :g 20 :f 20) )
+;; (defparameter node-001
+;;    (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
+;; (defparameter node-002
+;;    (make-node :state 'Kentares :depth 2 :g 50 :f 50) )
+;; (defparameter lst-nodes-00
+;;    (list
+;;       (make-node :state 'Davion :depth 3 :g 10 :f 10)
+;;       (make-node :state 'Mallory :depth 3 :g 25 :f 25)
+;;       (make-node :state 'Katril :depth 3 :g 60 :f 60)))
+;;
+;; (insert-nodes-strategy '(4 8 6 2) '(1 3 5 7) (make-strategy :name 'simple :node-compare-p #'<))
+;;
+;; (print (insert-nodes-strategy (list node-000 node-001 node-002)
+;;                          lst-nodes-00
+;;                          *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
 ;;; #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
@@ -456,12 +645,12 @@
 ;;; #S(NODE :STATE SIRTIS :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL SIRTIS :COST 7) :DEPTH 13 :G 17 :H 0 :F 17)
 ;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50))
-
-
-; (print
-;  (insert-nodes-strategy (list node-000 node-001 node-002)
-;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g)
-;                         *uniform-cost*));->
+;;
+;;
+;; (print
+;;  (insert-nodes-strategy (list node-000 node-001 node-002)
+;;                         (sort (copy-list lst-nodes-00) #'<= :key #'node-g)
+;;                         *uniform-cost*));->
 ;;;
 ;;;(#S(NODE :STATE AVALON :PARENT NIL :ACTION NIL :DEPTH 0 :G 0 :H 0 :F 0)
 ;;; #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
@@ -480,8 +669,10 @@
 ;;; #S(NODE :STATE KENTARES :PARENT #S(NODE :STATE PROSERPINA :PARENT NIL :ACTION NIL :DEPTH 12 :G 10 :H 0 :F 20)
 ;;;         :ACTION #S(ACTION :NAME NAVIGATE-WORM-HOLE :ORIGIN PROSERPINA :FINAL KENTARES :COST 21) :DEPTH 13 :G 31 :H 4 :F 35)
 ;;; #S(NODE :STATE KENTARES :PARENT NIL :ACTION NIL :DEPTH 2 :G 50 :H 0 :F 50))
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;    END: Exercize 6 -- Node list management
 ;;
