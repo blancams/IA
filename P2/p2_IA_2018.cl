@@ -193,7 +193,7 @@
 ;; white holes.
 ;;
 ;;  Input: state      : the current state (vis. the planet we are on)
-;;         white-holes: a holes list, that is a list of threes
+;;         white-holes: a holes list, that is, a list of three of a kind
 ;;                      where the first element is the name of a state, 
 ;;                      the second the name of the final state, and the third
 ;;                      a number estimating the cost to reach the goal.
@@ -327,8 +327,8 @@
 ;;    T if the node is the goal, NIL if it is not.
 ;;
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory)
-  (when (member (node-state node) planets-destination) ; para saber que hemos llegado a la meta al menos
-    (null (get-pending-mandatory node planet-mandatory)))) ; lo he separado y es feo pero lo he hecho rapido
+  (when (member (node-state node) planets-destination)
+    (null (get-pending-mandatory node planets-mandatory))))
 ;;
 ;; EXAMPLES: 
 ;; 
@@ -467,21 +467,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; expand
 ;;
-;; Returns the expansion of a node given a problem and a list of actions.
+;; Returns the expansion of a node given a heuristic and a list of operators.
 ;;
-;;  Input: node   : the current node (vis. the planet we are on)
-;;         problem: the problem we are solving.
-;;         actions: list of actions that can be executed to expand the node.
+;;  Input: node     : the current node (vis. the planet we are on)
+;;         heuristic: the heuristic of the problem.
+;;         operators: list of operators that can be executed to expand the node.
 ;;
 ;;  Returns:
 ;;    A list of nodes accessibles from the node given navigating using the
-;;    actions given.
+;;    operators given.
 ;;
-(defun expand (node problem operators)
+(defun expand (node heuristic operators)
   (unless (null operators)
     (append (mapcar #'(lambda(x) (let* ((state (action-final x))
                                         (g     (+ (node-g node) (action-cost x)))
-                                        (h     (funcall (problem-f-h problem) state)))
+                                        (h     (funcall heuristic state)))
                                    (make-node :state state
                                               :parent node
                                               :action x
@@ -490,7 +490,7 @@
                                               :h h
                                               :f (+ g h))))
                     (funcall (first operators) (node-state node)))
-            (expand node problem (rest operators)))))
+            (expand node heuristic (rest operators)))))
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -503,19 +503,19 @@
 ;;         problem: the problem we are solving.
 ;;
 ;;  Returns:
-;;    A list of nodes accessibles from the node given navigating using the
+;;    A list of nodes accessibles from the given node navigating using the
 ;;    operators of the problem.
 ;;
 (defun expand-node (node problem)
-  (expand node problem (problem-operators problem)))
+  (expand node (problem-f-h problem) (problem-operators problem)))
 ;;
 ;; EXAMPLES:
 ;;
 ;; (defparameter node-00
 ;;   (make-node :state 'Proserpina :depth 12 :g 10 :f 20))
 ;;
-;;(defparameter lst-nodes-00
-;;  (expand-node node-00 *galaxy-M35*))
+;; (defparameter lst-nodes-00
+;;   (expand-node node-00 *galaxy-M35*))
 ;;
 ;;(print lst-nodes-00) ->
 ;;;(#S(NODE :STATE AVALON
