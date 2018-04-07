@@ -2,11 +2,15 @@ pertenece(X, [X|_]) :-  X \= [_|_].
 pertenece(X, [Z|_]) :- pertenece(X, Z).
 pertenece(X, [_|Rs]) :- pertenece(X, Rs).
 
+pertenece_m(X, [X|_]) :- X \= [_|_].
+pertenece_m(X, [Y|_]) :- pertenece_m(X, Y).
+pertenece_m(X, [_|Rs]) :- pertenece_m(X, Rs).
+
 concatena([], L, L).
 concatena([X|L1], L2, [X|L3]) :- concatena(L1, L2, L3).
 
 invierte([], []).
-invierte([X|Y], L) :- invierte(Y, N), concatena(N, [X], L).
+invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
 
 insert([X-P], [], R) :- concatena([X-P], [], R).
 insert([X-P], [Y-Q|Z], R) :- P < Q, concatena([X-P], [Y-Q], N), concatena(N, Z, R).
@@ -24,5 +28,3 @@ list_count_aux([], _, L3, Laux) :- L3 = Laux.
 sort_list(L1, L2) :- sort_list_aux(L1, L2, []).
 sort_list_aux([X|Z], L2, L) :- insert([X], L, N), sort_list_aux(Z, L2, N).
 sort_list_aux([], L2, L) :- L2 = L.
-
-
