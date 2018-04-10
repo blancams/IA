@@ -1,3 +1,27 @@
+/*******************************************
+*    Lab assignment 3
+*    LAB GROUP:   2302
+*    Couple:      3
+*    Author 1:    Blanca Martin Selgas
+*    Author 2:    Fernando Villar Gomez
+*******************************************/
+
+/*******************************************
+*    Exercise 1:
+*
+*    pertenece(X, L)
+*      Predicate that evaluates if the element X is contained in the list L.
+*      If the element is contained multiple times, a 'true' is returned for
+*      each coincidence. When given an uninitialized variable, it returns all
+*      of the elements through X.
+*      Note: The list L must not contain sublists.
+*
+*    pertenece_m(X, L)
+*      Predicate that performs the same evaluation that 'pertenece', but in
+*      this case, L may contain sublists.
+*
+*/
+
 pertenece(X, [X|_]).
 pertenece(X, [_|Rs]) :- pertenece(X, Rs).
 
@@ -5,28 +29,194 @@ pertenece_m(X, [X|_]) :- X \= [_|_].
 pertenece_m(X, [Ls|_]) :- pertenece_m(X, Ls).
 pertenece_m(X, [_|Rs]) :- pertenece_m(X, Rs).
 
+/*
+*    Examples:
+*      ?- pertenece(1, [2, 1, 3, 1]).
+*      true ;
+*      true ;
+*      false.
+*
+*      ?- pertenece(X, [2, 1, 3, 1]).
+*      X = 2 ;
+*      X = 1 ;
+*      X = 3 ;
+*      X = 1 ;
+*      false.
+*
+*      ?- pertenece_m(1, [2, [1, 3], [1, [4, 5]]]).
+*      true ;
+*      true ;
+*      false.
+*
+*      ?- pertenece_m(X, [2, [1, 3], [1, [4, 5]]]).
+*      X = 2 ;
+*      X = 1 ;
+*      X = 3 ;
+*      X = 1 ;
+*      X = 4 ;
+*      X = 5 ;
+*******************************************/
+
+
+/*******************************************
+*    Exercise 2:
+*
+*    concatena(L1, L2, L3)
+*      Predicate that evaluates if L3 is concatenation of L1 and L2. When
+*      given an uninitialized variable, it returns the concatenation of L1 and
+*      L2 through L3.
+*
+*    invierte(L1, L2)
+*      Predicate that evaluates if L2 is the reverse list of L1. When given
+*      an uninitialized variable, it returns the reverse list of L1 through L2.
+*
+*/
+
 concatena([], L, L).
 concatena([X|L1], L2, [X|L3]) :- concatena(L1, L2, L3).
 
 invierte([], []).
 invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
 
+/*
+*    Examples:
+*      ?- concatena([1, 2, 3], [4, 5], X).
+*      X = [1, 2, 3, 4, 5]
+*
+*      ?- invierte([1, 2, 3], X).
+*      X = [3, 2, 1]
+*******************************************/
+
+
+/*******************************************
+*    Exercise 3:
+*
+*    insert(X-P, L, R)
+*      Predicate that inserts a pair of elements (X-P) in an ordered pair list
+*      (L) in the position P, returning the resulting list through R.
+*
+*/
+
 insert([X-P], [], R) :- concatena([X-P], [], R).
-insert([X-P], [Y-Q|Z], R) :- P < Q, concatena([X-P], [Y-Q], N), concatena(N, Z, R).
-insert([X-P], [Y-Q|Z], R) :- P >= Q, insert([X-P], Z, N), concatena([Y-Q], N, R).
+insert([X-P], [Y-Q|Z], R) :-    P < Q,
+                                concatena([X-P], [Y-Q], N),
+                                concatena(N, Z, R).
+insert([X-P], [Y-Q|Z], R) :-    P >= Q,
+                                insert([X-P], Z, N),
+                                concatena([Y-Q], N, R).
+
+/*
+*    Examples:
+*      ?- insert([a-6],[p-0, g-7], X).
+*      X = [p-0, a-6, g-7] ;
+*      false.
+*
+*      ?- insert([a-6],[p-0, g-7, t-2], X).
+*      X = [p-0, a-6, g-7, t-2] ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 4.1:
+*
+*    elem_count(X, L, Xn)
+*      Predicate that satisfies when the element X appears Xn times in the list L.
+*      Note: elem_count is implemented using elem_count_aux, a predicate that
+*      goes through the list L counting the times X appears in it.
+*
+*/
 
 elem_count(X, L, Xn) :- elem_count_aux(X, L, Xn, 0).
-elem_count_aux(X, [X|Z], Xn, Cnt) :- Ncount is Cnt+1, elem_count_aux(X, Z, Xn, Ncount).
-elem_count_aux(X, [Y|Z], Xn, Cnt) :- X \= Y, elem_count_aux(X, Z, Xn, Cnt).
+elem_count_aux(X, [X|Z], Xn, Cnt) :-    N is Cnt+1,
+                                        elem_count_aux(X, Z, Xn, N).
+elem_count_aux(X, [Y|Z], Xn, Cnt) :-    X \= Y,
+                                        elem_count_aux(X, Z, Xn, Cnt).
 elem_count_aux(_, [], Xn, Cnt) :- Xn = Cnt.
 
+/*
+*    Examples:
+*      ?- elem_count(b,[b,a,b,a,b],Xn).
+*      Xn = 3 ;
+*      false.
+*
+*      ?- elem_count(a,[b,a,b,a,b],Xn).
+*      Xn = 2 ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 4.2:
+*
+*    list_count(L1, L2, L3)
+*      Predicate that satisfies when L3 contains the appearances of the elements
+*      of L1 in L2, with format [element-appearances] (for example, [b-6]).
+*
+*/
+
 list_count(L1, L2, L3) :- list_count_aux(L1, L2, L3, []).
-list_count_aux([X|Z], L2, L3, Laux) :- elem_count(X, L2, C), concatena(Laux, [X-C], N), list_count_aux(Z, L2, L3, N).
+list_count_aux([X|Z], L2, L3, Laux) :-  elem_count(X, L2, C),
+                                        concatena(Laux, [X-C], N),
+                                        list_count_aux(Z, L2, L3, N).
 list_count_aux([], _, L3, Laux) :- L3 = Laux.
+
+/*
+*    Examples:
+*      ?- list_count([b],[b,a,b,a,b],Xn).
+*      Xn = [b-3] ;
+*      false.
+*
+*      ?- list_count([b,a],[b,a,b,a,b],Xn).
+*      Xn = [b-3, a-2] ;
+*      false.
+*
+*      ?- list_count([b,a,c],[b,a,b,a,b],Xn).
+*      Xn = [b-3, a-2, c-0] ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 5:
+*
+*    sort_list(L1, L2)
+*      Predicate that satisfies when L2 contains the pairs of L1 sorted (as in
+*      the previous exercises, with format [element-appearances]).
+*
+*/
 
 sort_list(L1, L2) :- sort_list_aux(L1, L2, []).
 sort_list_aux([X|Z], L2, L) :- insert([X], L, N), sort_list_aux(Z, L2, N).
 sort_list_aux([], L2, L) :- L2 = L.
+
+/*
+*    Examples:
+*      ?- sort_list([p-0, a-6, g-7, t-2], X).
+*      X = [p-0, t-2, a-6, g-7] ;
+*      false.
+*
+*      ?- sort_list([p-0, a-6, g-7, p-9, t-2], X).
+*      X = [p-0, t-2, a-6, g-7, p-9] ;
+*      false.
+*
+*      ?- sort_list([p-0, a-6, g-7, p-9, t-2, 9-99], X).
+*      X = [p-0, t-2, a-6, g-7, p-9, 9-99] ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 6:
+*
+*    build_tree(L, T)
+*      Predicate that transforms an ordered list of pairs into a simplified
+*      Huffman tree.
+*      Note: build_tree uses two auxiliary functions, build_tree_aux (used to
+*      keep track of the tree at each step) and add_node (as its name suggests,
+*      it is used to add nodes to the tree).
+*
+*/
 
 add_node(X, nil, tree(X, nil, nil)).
 add_node(X, tree(Info, nil, nil), tree(Info, L, nil)) :- add_node(X, nil, L), !.
@@ -37,19 +227,120 @@ build_tree_aux([X-_|R], T, U) :-    add_node(1, U, V),
                                     add_node(X, V, W),
                                     build_tree_aux(R, T, W).
 
+/*
+*    Examples:
+*      ?-build_tree([p-0, a-6, g-7, p-9, t-2, 9-99], X).
+*      X = tree(1, tree(p, nil, nil), tree(1, tree(a, nil, nil),
+*      tree(1, tree(g, nil, nil), tree(1, tree(p, nil, nil), tree(1,
+*      tree(t, nil, nil), tree(9, nil, nil)))))) ;
+*      false.
+*
+*      ?-build_tree([p-55, a-6, g-2, p-1], X).
+*      X = tree(1, tree(p, nil, nil), tree(1, tree(a, nil, nil),
+*      tree(1, tree(g, nil, nil), tree(p, nil, nil)))) ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 7.1:
+*
+*    encode_elem(X1, X2, Tree)
+*      Predicate that encodes (returning the value through X2) the element X1,
+*      based on the Huffman tree Tree.
+*      Note: encode_elem uses the auxiliary function encode_elem_aux that fills
+*      a list in which the encoding of X1 is being saved each step.
+*
+*/
+
 encode_elem(X1, X2, Tree) :- encode_elem_aux(X1, X2, Tree, []).
 encode_elem_aux(E, X, tree(1, tree(E, _, _), _), L) :- concatena(L, [0], X).
-encode_elem_aux(E, X, tree(1, tree(A, _, _), tree(E, _, _)), L) :-  A \= E,
-                                                                    concatena(L, [1], X).
+encode_elem_aux(E, X, tree(1, tree(A, _, _), tree(E, _, _)), L) :- A \= E,
+                                            concatena(L, [1], X).
 encode_elem_aux(E, X, tree(1, tree(A, _, _), Right), L) :- A \= E,
-     													   concatena(L, [1], M),
-     													   encode_elem_aux(E, X, Right, M).
+                                            concatena(L, [1], M),
+                                            encode_elem_aux(E, X, Right, M).
+
+/*
+*    Examples:
+*      ?-build_tree([a-11, b-6, c-2, d-1], X).
+*      X = tree(1, tree(a, nil, nil), tree(1, tree(b, nil, nil),
+*      tree(1, tree(c, nil, nil), tree(d, nil, nil)))) ;
+*      false.
+*
+*
+*      ?- encode_elem(a, X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [0] ;
+*      false.
+*
+*      ?- encode_elem(b, X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [1, 0] ;
+*      false.
+*
+*      ?- encode_elem(c, X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [1, 1, 0] ;
+*      false.
+*
+*      ?- encode_elem(d, X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [1, 1, 1] ;
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 7.1:
+*
+*    encode_list(L1, L2, Tree)
+*      Performs the same task that encode_elem, but this time using lists of
+*      elements and lists of codes.
+*      Note: encode_list uses encode_list_aux for the same reasons encode_elem
+*      uses encode_elem_aux.
+*
+*/
 
 encode_list(L1, L2, Tree) :- encode_list_aux(L1, L2, Tree, []).
 encode_list_aux([], X, _, L) :- X = L.
 encode_list_aux([E|Rs], X, Tree, L) :-  encode_elem(E, F, Tree),
                                         concatena(L, [F], M),
                                         encode_list_aux(Rs, X, Tree, M).
+
+/*
+*    Examples:
+*      ?- encode_list([a], X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [[0]] ;
+*      false.
+*
+*      ?- encode_list([a, a], X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [[0], [0]] ;
+*      false.
+*
+*      ?- encode_list([a, d, a], X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      X = [[0], [1, 1, 1], [0]] ;
+*      false.
+*
+*      ?- encode_list([a, d, a, q], X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      false.
+*******************************************/
+
+
+/*******************************************
+*    Exercise 7.1:
+*
+*    encode(L1, L2)
+*      Predicate that encodes each element of L1 into L2 based on its frequence
+*      inside L1.
+*      Note: encode uses the predicate dictionary as a data base of the elements
+*      we want to allow in L1.
+*
+*/
 
 dictionary([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]).
 
@@ -59,3 +350,21 @@ encode(L1, L2) :-   dictionary(D),
                     invierte(F, G),
                     build_tree(G, H),
     				encode_list(L1,L2,H).
+
+/*
+*    Examples:
+*      ?- encode([i,n,t,e,l,i,g,e,n,c,i,a,a,r,t,i,f,i,c,i,a,l], X).
+*      X = [[0], [1, 1, 1, 0], [1, 1, 0], [1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 0],
+*      [0], [1, 1, 1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 0], [1, 1, 1, 0],
+*      [1, 1, 1, 1, 1, 1, 0], [0], [1, 0], [1, 0], [1, 1, 1, 1, 1, 1, 1, 0],
+*      [1, 1, 0], [0], [1, 1, 1, 1, 1, 1, 1, 1, 1, 0], [0], [1, 1, 1, 1, 1, 1, 0],
+*      [0], [1, 0], [1, 1, 1, 1, 0]] ;
+*      false.
+*
+*      ?- encode([i,a], X).
+*      X = [[0], [1, 0]] ;
+*      false.
+*
+*      ?- encode([i,2,a], X).
+*      false.
+*******************************************/
