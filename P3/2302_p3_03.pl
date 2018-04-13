@@ -99,8 +99,7 @@ invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
 
 insert([X-P], [], [X-P]).
 insert([X-P], [Y-Q|Z], R) :-    P < Q,
-                                concatena([X-P], [Y-Q], N),
-                                concatena(N, Z, R).
+                                concatena([X-P], [Y-Q|Z], R).
 insert([X-P], [Y-Q|Z], R) :-    P >= Q,
                                 insert([X-P], Z, N),
                                 concatena([Y-Q], N, R).
@@ -209,10 +208,17 @@ sort_list([X|Z], L2) :- sort_list(Z, N), insert([X], N, L2).
 */
 
 build_tree([X-_], tree(X, nil, nil)).
-build_tree([X-_|Z], T) :- build_tree(Z, M), T = tree(1, tree(X, nil, nil), M).
+build_tree([X-_|Rs], tree(1, tree(X, nil, nil), Right)) :- build_tree(Rs, Right).
 
 /*
 *    Examples:
+*      ?- build_tree([], X).
+*      false.
+*
+*      ?- build_tree([a-8], X).
+*      X = tree(a, nil, nil) ;
+*      false.
+*
 *      ?- build_tree([p-0, a-6, g-7, p-9, t-2, 9-99], X).
 *      X = tree(1, tree(p, nil, nil), tree(1, tree(a, nil, nil),
 *      tree(1, tree(g, nil, nil), tree(1, tree(p, nil, nil), tree(1,
@@ -235,9 +241,11 @@ build_tree([X-_|Z], T) :- build_tree(Z, M), T = tree(1, tree(X, nil, nil), M).
 *
 */
 
+encode_elem(E, [1], tree(E, _, _)).
 encode_elem(E, [0], tree(1, tree(E, _, _), _)).
 encode_elem(E, [1], tree(1, tree(A, _, _), tree(E, _, _))) :- A \= E.
 encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
+    											R \= tree(E, _, _),
                                                 encode_elem(E, Y, R),
                                                 concatena([1], Y, X).
 
@@ -249,7 +257,8 @@ encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
 *      false.
 *
 *
-*      ?- encode_elem(a, X, tree(1, tree(a, nil, nil), tree(1, tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      ?- encode_elem(a, X, tree(1, tree(a, nil, nil), tree(1,
+*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
 *      X = [0] ;
 *      false.
 *
@@ -266,6 +275,10 @@ encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
 *      ?- encode_elem(d, X, tree(1, tree(a, nil, nil), tree(1,
 *         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
 *      X = [1, 1, 1] ;
+*      false.
+*
+*      ?- encode_elem(a, X, tree(a, nil, nil)).
+*      X = [1] ;
 *      false.
 *******************************************/
 
