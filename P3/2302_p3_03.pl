@@ -76,7 +76,7 @@ concatena([], L, L).
 concatena([X|L1], L2, [X|L3]) :- concatena(L1, L2, L3).
 
 invierte([], []).
-invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
+invierte([X|L1], L2) :- invierte(L1, L3), concatena(L3, [X], L2).
 
 /*
 *    Examples:
@@ -98,11 +98,11 @@ invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
 */
 
 insert([X-P], [], [X-P]).
-insert([X-P], [Y-Q|Z], R) :-    P < Q,
-                                concatena([X-P], [Y-Q|Z], R).
-insert([X-P], [Y-Q|Z], R) :-    P >= Q,
-                                insert([X-P], Z, N),
-                                concatena([Y-Q], N, R).
+insert([X-P], [Y-Q|Zs], R) :-   P =< Q,
+                                concatena([X-P], [Y-Q|Zs], R).
+insert([X-P], [Y-Q|Zs], R) :-   P > Q,
+                                insert([X-P], Zs, R1),
+                                concatena([Y-Q], R1, R).
 
 /*
 *    Examples:
@@ -125,8 +125,8 @@ insert([X-P], [Y-Q|Z], R) :-    P >= Q,
 */
 
 elem_count(_, [], 0).
-elem_count(X, [X|Z], Xn) :- elem_count(X, Z, N), Xn is N+1.
-elem_count(X, [Y|Z], Xn) :- X \= Y, elem_count(X, Z, Xn).
+elem_count(X, [X|Zs], Xn) :- elem_count(X, Zs, N), Xn is N+1.
+elem_count(X, [Y|Zs], Xn) :- X \= Y, elem_count(X, Zs, Xn).
 
 /*
 *    Examples:
@@ -150,9 +150,9 @@ elem_count(X, [Y|Z], Xn) :- X \= Y, elem_count(X, Z, Xn).
 */
 
 list_count([], _, []).
-list_count([X|Z], L2, L3) :-    list_count(Z, L2, M),
-                                elem_count(X, L2, C),
-                                concatena([X-C], M, L3).
+list_count([X|Zs], L2, L3) :-   list_count(Zs, L2, L),
+                                elem_count(X, L2, N),
+                                concatena([X-N], L, L3).
 
 /*
 *    Examples:
@@ -180,7 +180,7 @@ list_count([X|Z], L2, L3) :-    list_count(Z, L2, M),
 */
 
 sort_list([], []).
-sort_list([X|Z], L2) :- sort_list(Z, N), insert([X], N, L2).
+sort_list([X|Zs], L2) :- sort_list(Zs, L), insert([X], L, L2).
 
 /*
 *    Examples:
@@ -244,10 +244,10 @@ build_tree([X-_|Rs], tree(1, tree(X, nil, nil), Right)) :- build_tree(Rs, Right)
 encode_elem(E, [1], tree(E, _, _)).
 encode_elem(E, [0], tree(1, tree(E, _, _), _)).
 encode_elem(E, [1], tree(1, tree(A, _, _), tree(E, _, _))) :- A \= E.
-encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
-    											R \= tree(E, _, _),
-                                                encode_elem(E, Y, R),
-                                                concatena([1], Y, X).
+encode_elem(E, X, tree(1, tree(A, _, _), Right)) :- A \= E,
+                                                    Right \= tree(E, _, _),
+                                                    encode_elem(E, Y, Right),
+                                                    concatena([1], Y, X).
 
 /*
 *    Examples:
@@ -293,9 +293,9 @@ encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
 */
 
 encode_list([], [], _).
-encode_list([E|Rs], X, Tree) :- encode_list(Rs, M, Tree),
-                                encode_elem(E, F, Tree),
-                                concatena([F], M, X).
+encode_list([E|Rs], L, Tree) :- encode_list(Rs, L1, Tree),
+                                encode_elem(E, X, Tree),
+                                concatena([X], L1, L).
 
 /*
 *    Examples:
@@ -333,12 +333,12 @@ encode_list([E|Rs], X, Tree) :- encode_list(Rs, M, Tree),
 
 dictionary([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]).
 
-encode(L1, L2) :-   dictionary(D),
-                    list_count(D, L1, E),
-                    sort_list(E, F),
-                    invierte(F, G),
-                    build_tree(G, H),
-    				encode_list(L1,L2,H).
+encode(L1, L2) :-   dictionary(L3),
+                    list_count(L3, L1, L4),
+                    sort_list(L4, L5),
+                    invierte(L5, L6),
+                    build_tree(L6, L7),
+    				encode_list(L1,L2,L7).
 
 /*
 *    Examples:
