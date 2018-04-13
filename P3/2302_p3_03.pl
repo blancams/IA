@@ -97,7 +97,7 @@ invierte([X|L1], L2) :- invierte(L1, M), concatena(M, [X], L2).
 *
 */
 
-insert([X-P], [], R) :- concatena([X-P], [], R).
+insert([X-P], [], [X-P]).
 insert([X-P], [Y-Q|Z], R) :-    P < Q,
                                 concatena([X-P], [Y-Q], N),
                                 concatena(N, Z, R).
