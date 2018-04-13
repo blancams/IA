@@ -124,7 +124,7 @@ insert([X-P], [Y-Q|Z], R) :-    P >= Q,
 *
 */
 
-elem_count(_, [], _).
+elem_count(_, [], 0).
 elem_count(X, [X|Z], Xn) :- elem_count(X, Z, N), Xn is N+1.
 elem_count(X, [Y|Z], Xn) :- X \= Y, elem_count(X, Z, Xn).
 
