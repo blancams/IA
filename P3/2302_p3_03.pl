@@ -205,30 +205,21 @@ sort_list([X|Z], L2) :- sort_list(Z, N), insert([X], N, L2).
 *    build_tree(L, T)
 *      Predicate that transforms an ordered list of pairs into a simplified
 *      Huffman tree.
-*      Note: build_tree uses two auxiliary functions, build_tree_aux (used to
-*      keep track of the tree at each step) and add_node (as its name suggests,
-*      it is used to add nodes to the tree).
 *
 */
 
-add_node(X, nil, tree(X, nil, nil)).
-add_node(X, tree(Info, nil, nil), tree(Info, L, nil)) :- add_node(X, nil, L), !.
-add_node(X, tree(Info, Left, Right), tree(Info, Left, R)) :- add_node(X, Right, R), !.
-build_tree(L, T) :- build_tree_aux(L, T, nil).
-build_tree_aux([X-_], T, U) :- add_node(X, U, T).
-build_tree_aux([X-_|R], T, U) :-    add_node(1, U, V),
-                                    add_node(X, V, W),
-                                    build_tree_aux(R, T, W).
+build_tree([X-_], tree(X, nil, nil)).
+build_tree([X-_|Z], T) :- build_tree(Z, M), T = tree(1, tree(X, nil, nil), M).
 
 /*
 *    Examples:
-*      ?-build_tree([p-0, a-6, g-7, p-9, t-2, 9-99], X).
+*      ?- build_tree([p-0, a-6, g-7, p-9, t-2, 9-99], X).
 *      X = tree(1, tree(p, nil, nil), tree(1, tree(a, nil, nil),
 *      tree(1, tree(g, nil, nil), tree(1, tree(p, nil, nil), tree(1,
 *      tree(t, nil, nil), tree(9, nil, nil)))))) ;
 *      false.
 *
-*      ?-build_tree([p-55, a-6, g-2, p-1], X).
+*      ?- build_tree([p-55, a-6, g-2, p-1], X).
 *      X = tree(1, tree(p, nil, nil), tree(1, tree(a, nil, nil),
 *      tree(1, tree(g, nil, nil), tree(p, nil, nil)))) ;
 *      false.
@@ -241,18 +232,14 @@ build_tree_aux([X-_|R], T, U) :-    add_node(1, U, V),
 *    encode_elem(X1, X2, Tree)
 *      Predicate that encodes (returning the value through X2) the element X1,
 *      based on the Huffman tree Tree.
-*      Note: encode_elem uses the auxiliary function encode_elem_aux that fills
-*      a list in which the encoding of X1 is being saved each step.
 *
 */
 
-encode_elem(X1, X2, Tree) :- encode_elem_aux(X1, X2, Tree, []).
-encode_elem_aux(E, X, tree(1, tree(E, _, _), _), L) :- concatena(L, [0], X).
-encode_elem_aux(E, X, tree(1, tree(A, _, _), tree(E, _, _)), L) :- A \= E,
-                                            concatena(L, [1], X).
-encode_elem_aux(E, X, tree(1, tree(A, _, _), Right), L) :- A \= E,
-                                            concatena(L, [1], M),
-                                            encode_elem_aux(E, X, Right, M).
+encode_elem(E, [0], tree(1, tree(E, _, _), _)).
+encode_elem(E, [1], tree(1, tree(A, _, _), tree(E, _, _))) :- A \= E.
+encode_elem(E, X, tree(1, tree(A, _, _), R)) :- A \= E,
+                                                encode_elem(E, Y, R),
+                                                concatena([1], Y, X).
 
 /*
 *    Examples:
@@ -262,8 +249,7 @@ encode_elem_aux(E, X, tree(1, tree(A, _, _), Right), L) :- A \= E,
 *      false.
 *
 *
-*      ?- encode_elem(a, X, tree(1, tree(a, nil, nil), tree(1,
-*         tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
+*      ?- encode_elem(a, X, tree(1, tree(a, nil, nil), tree(1, tree(b, nil, nil), tree(1, tree(c, nil, nil), tree(d, nil, nil))))).
 *      X = [0] ;
 *      false.
 *
@@ -290,16 +276,13 @@ encode_elem_aux(E, X, tree(1, tree(A, _, _), Right), L) :- A \= E,
 *    encode_list(L1, L2, Tree)
 *      Performs the same task that encode_elem, but this time using lists of
 *      elements and lists of codes.
-*      Note: encode_list uses encode_list_aux for the same reasons encode_elem
-*      uses encode_elem_aux.
 *
 */
 
-encode_list(L1, L2, Tree) :- encode_list_aux(L1, L2, Tree, []).
-encode_list_aux([], X, _, L) :- X = L.
-encode_list_aux([E|Rs], X, Tree, L) :-  encode_elem(E, F, Tree),
-                                        concatena(L, [F], M),
-                                        encode_list_aux(Rs, X, Tree, M).
+encode_list([], [], _).
+encode_list([E|Rs], X, Tree) :- encode_list(Rs, M, Tree),
+                                encode_elem(E, F, Tree),
+                                concatena([F], M, X).
 
 /*
 *    Examples:
