@@ -122,17 +122,12 @@ insert([X-P], [Y-Q|Z], R) :-    P >= Q,
 *
 *    elem_count(X, L, Xn)
 *      Predicate that satisfies when the element X appears Xn times in the list L.
-*      Note: elem_count is implemented using elem_count_aux, a predicate that
-*      goes through the list L counting the times X appears in it.
 *
 */
 
-elem_count(X, L, Xn) :- elem_count_aux(X, L, Xn, 0).
-elem_count_aux(X, [X|Z], Xn, Cnt) :-    N is Cnt+1,
-                                        elem_count_aux(X, Z, Xn, N).
-elem_count_aux(X, [Y|Z], Xn, Cnt) :-    X \= Y,
-                                        elem_count_aux(X, Z, Xn, Cnt).
-elem_count_aux(_, [], Xn, Cnt) :- Xn = Cnt.
+elem_count(_, [], _).
+elem_count(X, [X|Z], Xn) :- elem_counts(X, Z, N), Xn is N+1.
+elem_count(X, [Y|Z], Xn) :- X \= Y, elem_counts(X, Z, Xn).
 
 /*
 *    Examples:
@@ -155,11 +150,10 @@ elem_count_aux(_, [], Xn, Cnt) :- Xn = Cnt.
 *
 */
 
-list_count(L1, L2, L3) :- list_count_aux(L1, L2, L3, []).
-list_count_aux([X|Z], L2, L3, Laux) :-  elem_count(X, L2, C),
-                                        concatena(Laux, [X-C], N),
-                                        list_count_aux(Z, L2, L3, N).
-list_count_aux([], _, L3, Laux) :- L3 = Laux.
+list_count([], _, []).
+list_count([X|Z], L2, L3) :-    list_counts(Z, L2, M),
+                                elem_counts(X, L2, C),
+                                concatena([X-C], M, L3).
 
 /*
 *    Examples:
@@ -186,9 +180,8 @@ list_count_aux([], _, L3, Laux) :- L3 = Laux.
 *
 */
 
-sort_list(L1, L2) :- sort_list_aux(L1, L2, []).
-sort_list_aux([X|Z], L2, L) :- insert([X], L, N), sort_list_aux(Z, L2, N).
-sort_list_aux([], L2, L) :- L2 = L.
+sort_list([], []).
+sort_list([X|Z], L2) :- sort_list(Z, N), insert([X], N, L2).
 
 /*
 *    Examples:
