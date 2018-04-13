@@ -126,8 +126,8 @@ insert([X-P], [Y-Q|Z], R) :-    P >= Q,
 */
 
 elem_count(_, [], _).
-elem_count(X, [X|Z], Xn) :- elem_counts(X, Z, N), Xn is N+1.
-elem_count(X, [Y|Z], Xn) :- X \= Y, elem_counts(X, Z, Xn).
+elem_count(X, [X|Z], Xn) :- elem_count(X, Z, N), Xn is N+1.
+elem_count(X, [Y|Z], Xn) :- X \= Y, elem_count(X, Z, Xn).
 
 /*
 *    Examples:
@@ -151,8 +151,8 @@ elem_count(X, [Y|Z], Xn) :- X \= Y, elem_counts(X, Z, Xn).
 */
 
 list_count([], _, []).
-list_count([X|Z], L2, L3) :-    list_counts(Z, L2, M),
-                                elem_counts(X, L2, C),
+list_count([X|Z], L2, L3) :-    list_count(Z, L2, M),
+                                elem_count(X, L2, C),
                                 concatena([X-C], M, L3).
 
 /*
