@@ -321,7 +321,7 @@ encode_list([E|Rs], L, Tree) :- encode_list(Rs, L1, Tree),
 
 
 /*******************************************
-*    Exercise 7.1:
+*    Exercise 8:
 *
 *    encode(L1, L2)
 *      Predicate that encodes each element of L1 into L2 based on its frequence
