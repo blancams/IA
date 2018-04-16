@@ -337,8 +337,8 @@ encode(L1, L2) :-   dictionary(L3),
                     list_count(L3, L1, L4),
                     sort_list(L4, L5),
                     invierte(L5, L6),
-                    build_tree(L6, L7),
-    				encode_list(L1,L2,L7).
+                    build_tree(L6, T),
+    				encode_list(L1, L2, T).
 
 /*
 *    Examples:
