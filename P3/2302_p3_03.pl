@@ -241,7 +241,7 @@ build_tree([X-_|Rs], tree(1, tree(X, nil, nil), Right)) :- build_tree(Rs, Right)
 *
 */
 
-encode_elem(E, [1], tree(E, _, _)).
+encode_elem(E, [0], tree(E, _, _)).
 encode_elem(E, [0], tree(1, tree(E, _, _), _)).
 encode_elem(E, [1], tree(1, tree(A, _, _), tree(E, _, _))) :- A \= E.
 encode_elem(E, X, tree(1, tree(A, _, _), Right)) :- A \= E,
