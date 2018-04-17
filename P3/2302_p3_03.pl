@@ -284,7 +284,7 @@ encode_elem(E, X, tree(1, tree(A, _, _), Right)) :- A \= E,
 
 
 /*******************************************
-*    Exercise 7.1:
+*    Exercise 7.2:
 *
 *    encode_list(L1, L2, Tree)
 *      Performs the same task that encode_elem, but this time using lists of
