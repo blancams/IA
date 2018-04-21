@@ -4,30 +4,30 @@
 #include "heuristic.h"
 #include "mancala.h"
 
+// Only with even depth
 short heuristicIARegular(struct mancala_state ms) {
-	short i, sum1, sum2, cp, op;
+	short sum1, sum2, cp, op;
 
+	// With even depth, cp is the player who has the turn
 	cp = currentPlayer(ms);
 	op = oppositePlayer(ms);
 
-	for (i=0, sum1=0, sum2=0; i<7; i++) {
-		sum1 += ms.hole[cp*7+i];
-		sum2 += ms.hole[op*7+i];
-	}
+	sum1 = getPts(ms, cp);
+	sum2 = getPts(ms, op);
 
 	return sum1-sum2;
 }
 
+// Only with odd depth
 short heuristicIABuena(struct mancala_state ms) {
-	short i, sum1, sum2, cp, op;
+	short sum1, sum2, cp, op;
 
+	// With odd depth, op is the player who has the turn
 	cp = currentPlayer(ms);
 	op = oppositePlayer(ms);
 
-	for (i=0, sum1=0, sum2=0; i<7; i++) {
-		sum1 += ms.hole[cp*7+i];
-		sum2 += ms.hole[op*7+i];
-	}
+	sum1 = getPts(ms, cp);
+	sum2 = getPts(ms, op);
 
 	return sum2-sum1;
 }

@@ -107,7 +107,7 @@ short setValue(struct hextree_node *node, short value) {
 }
 
 struct hextree_node* negaMax(struct hextree_node *node, short color) {
-	short i;
+	short i, value = SHRT_MIN;
 	struct hextree_node *node_aux;
 
 	if (node == NULL) {
@@ -125,12 +125,13 @@ struct hextree_node* negaMax(struct hextree_node *node, short color) {
 			continue;
 		}
 		node_aux = negaMax(node->children[i], -1*color);
+		//printf("Valores: %d, %d, %p\n", node->value, node_aux->value, node_aux);
 		node_aux->value *= -1;
 		if (node_aux->value > node->value) {
 			node->value = node_aux->value;
 			node->index = node_aux->index;
 		}
 	}
-
+	
 	return node;
 }

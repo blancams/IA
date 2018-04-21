@@ -10,7 +10,7 @@ HEUR = heuristic
 CC = gcc
 FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
 
-.PHONY: all
+.PHONY: all clean
 
 all: $(MAIN)
 
@@ -21,3 +21,6 @@ $(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUI
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@echo Compilando $@: $^
 	$(CC) -o $@ -c $^ $(FLAGS)
+
+clean:
+	rm $(BUILDDIR)/*

@@ -94,6 +94,67 @@ short oppositePlayer(struct mancala_state ms) {
 	return 0;
 }
 
+short playerOne() {
+
+	return 0;
+}
+
+short playerTwo() {
+
+	return 1;
+}
+
+short getSeeds(struct mancala_state ms, short player, short hole) {
+	if (player < 0 || player > 1 || hole < 0 || hole > 6) {
+		return ERR;
+	}
+
+	return ms.hole[player*7 + hole];
+}
+
+short countSeeds(struct mancala_state ms, short player, short hole_from) {
+	short i, sum;
+
+	if (player < 0 || player > 1 || hole_from < 0 || hole_from > 6) {
+		return ERR;
+	}
+
+	for (i=hole_from, sum=0; i<7; i++) {
+		sum += ms.hole[player*7 + i];
+	}
+
+	return sum;
+}
+
+short* holesWithSeeds(struct mancala_state ms, short player, short hole_from) {
+	short *holes;
+	short i, j;
+
+	for (i=hole_from, j=0; i<6; i++) {
+		if (ms.hole[player*7 + i] != 0) {
+			j++;
+		}
+	}
+
+	// Must be freed by the caller
+	holes = (short*) malloc(j*sizeof(short));
+	if (holes == NULL) {
+		return NULL;
+	}
+
+	for (i=hole_from, j=0; i<6; i++) {
+		if (ms.hole[player*7 + i] != 0) {
+			holes[j] = i;
+		}
+	}
+
+	return holes;
+}
+
+short getPts(struct mancala_state ms, short player) {
+	return countSeeds(ms, player, 0);
+}
+
 short gameHasEnded(struct mancala_state ms) {
 	short i, test1, test2;
 
@@ -198,10 +259,11 @@ short makeMove(struct mancala_state *ms, short move) {
 			ms->hole[ophole_end] = 0;
 		}
 
+		/* They are such fucking sons of a b****
 		if (isSteal(*ms, hole_end)) {
 			ms->hole[ophole_end] = ms->hole[hole_end];
 			ms->hole[hole_end] = 0;
-		}
+		} */
 
 		if (mustRepeatTurn(*ms, hole_end)) {
 			ms->kalaha_flag = T;
@@ -222,7 +284,7 @@ short makeMove(struct mancala_state *ms, short move) {
 }
 
 short buildHextree(struct hextree_node *node, short depth, struct mancala_state ms, struct strategy *str) {
-	short i, value, ret;
+	short i, value, ret, flag = 0;
 	struct mancala_state ms_child;
 	struct hextree_node *child;
 
@@ -237,6 +299,10 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 
 	for (i=0; i<6; i++) {
 		if (isValidMove(ms, i)) {
+			if (flag == 0) {
+				flag = 1;
+			}
+
 			ret = getIndex(node);
 			if (ret == ERR) {
 				return ERR;
@@ -263,6 +329,14 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 			if (ret == ERR) {
 				return ERR;
 			}
+		}
+	}
+
+	if (flag == 0) {
+		value = str->h(ms);
+		ret = setValue(node, value);
+		if (ret == ERR) {
+			return ERR;
 		}
 	}
 
@@ -298,44 +372,54 @@ short chooseMove(struct mancala_state ms) {
 	return ret;
 }
 
-short playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2) {
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2) {
 	struct mancala_state *ms;
 	struct strategy *str1, *str2;
+	struct result *res;
 	short init[7] = {3, 3, 3, 3, 3, 3, 0};
 	short move, ret;
 
+	res = (struct result*) malloc(sizeof(struct result));
+	if (res == NULL) {
+		return NULL;
+	}
+
 	str1 = createStrategy(h1, depth1);
 	if (str1 == NULL) {
-		return ERR;
+		return NULL;
 	}
 
 	str2 = createStrategy(h2, depth2);
 	if (str2 == NULL) {
-		return ERR;
+		return NULL;
 	}
 
 	ms = createMancalaGame(init, init, player_turn, str1, str2);
 	if (ms == NULL) {
-		return ERR;
+		return NULL;
 	}
 
 	while(!gameHasEnded(*ms)) {
 		//printMancala(*ms);
 		move = chooseMove(*ms);
 		if (move == ERR) {
-			return ERR;
+			return NULL;
 		}
 		//printf("Choice from %d has been %d.\n", ms->player_turn, move);
 		ret = makeMove(ms, move);
 		if (ret == ERR) {
-			return ERR;
+			return NULL;
 		}
 	}
 
 	ret = gameWinner(*ms);
 	printMancala(*ms);
 
+	res->winner = ret;
+	res->score1 = countSeeds(*ms, 0, 0);
+	res->score2 = countSeeds(*ms, 1, 0);
+
 	freeMancalaGame(ms);
 
-	return ret;
+	return res;
 }

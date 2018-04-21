@@ -22,6 +22,12 @@ struct mancala_state {
 	struct strategy *str[2];
 };
 
+struct result {
+	short winner;
+	short score1;
+	short score2;
+};
+
 // Creation and deletion of a game
 struct mancala_state* createMancalaGame(short *player_1, short *player_2, short player_turn, struct strategy *str1, struct strategy *str2);
 void freeMancalaGame(struct mancala_state *ms);
@@ -34,6 +40,12 @@ void freeStrategy(struct strategy *str);
 short oppositeHole(short hole);
 short currentPlayer(struct mancala_state ms);
 short oppositePlayer(struct mancala_state ms);
+short playerOne();
+short playerTwo();
+short getSeeds(struct mancala_state ms, short player, short hole);
+short countSeeds(struct mancala_state ms, short player, short hole_from);
+short* holesWithSeeds(struct mancala_state ms, short player, short hole_from);
+short getPts(struct mancala_state ms, short player);
 
 // Control of states and movements
 short gameHasEnded(struct mancala_state ms);
@@ -51,6 +63,6 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 short chooseMove(struct mancala_state ms);
 
 // Play the game! (and return the winner)
-short playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2);
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2);
 
 #endif
