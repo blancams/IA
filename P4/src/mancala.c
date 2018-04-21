@@ -25,8 +25,8 @@ struct mancala_state* createMancalaGame(short *player_1, short *player_2, short 
 	ms->kalaha_flag = F;
 	ms->number_turn = 0;
 
-	ms->str[1] = str1;
-	ms->str[2] = str2;
+	ms->str[0] = str1;
+	ms->str[1] = str2;
 
 	return ms;
 }
@@ -55,7 +55,7 @@ void freeStrategy(struct strategy *str) {
 
 void freeMancalaGame(struct mancala_state *ms) {
 	freeStrategy(ms->str[1]);
-	freeStrategy(ms->str[2]);
+	freeStrategy(ms->str[0]);
 
 	if (ms != NULL) {
 		free(ms);
@@ -74,15 +74,15 @@ void printMancala(struct mancala_state ms) {
 }
 
 short oppositeHole(short hole) {
-	if (hole < 0 || hole > 5) {
+	if (hole < 0 || hole > 13) {
 		return ERR;
 	}
 
-	return 12 - hole;
+	return 12-hole;
 }
 
 short currentPlayer(struct mancala_state ms) {
-	
+
 	return ms.player_turn;
 }
 
@@ -179,7 +179,7 @@ short makeMove(struct mancala_state *ms, short move) {
 		}
 
 		cp = currentPlayer(*ms);
-		
+
 		hole_start = cp*7 + move;
 		seeds = ms->hole[hole_start];
 		ms->hole[hole_start] = 0;
@@ -226,8 +226,6 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 	struct mancala_state ms_child;
 	struct hextree_node *child;
 
-	printf("Signal 1.\n");
-
 	if (depth == 0) {
 		value = str->h(ms);
 		ret = setValue(node, value);
@@ -237,12 +235,8 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 		return OK;
 	}
 
-	printf("Signal 2.\n");
-
 	for (i=0; i<6; i++) {
-		printf("Signal 3.\n");
 		if (isValidMove(ms, i)) {
-			printf("Signal 4.\n");
 			ret = getIndex(node);
 			if (ret == ERR) {
 				return ERR;
@@ -277,20 +271,16 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 
 short chooseMove(struct mancala_state ms) {
 	struct hextree_node *root, *node_nega;
-	struct strategy *str = NULL;
 	short cp, ret;
 
 	cp = currentPlayer(ms);
-	str = ms.str[cp];
 
 	root = createHextree();
 	if (root == NULL) {
 		return ERR;
 	}
-	cp = ms.str[0]->depth;
-	printf("Hola %d.\n", cp);
-	ret = buildHextree(root, str->depth, ms, str);
-	printf("Adios.\n");
+
+	ret = buildHextree(root, ms.str[cp]->depth, ms, ms.str[cp]);
 	if (ret == ERR) {
 		freeHextree(root);
 		return ERR;
@@ -330,12 +320,12 @@ short playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, s
 	}
 
 	while(!gameHasEnded(*ms)) {
-		printMancala(*ms);
+		//printMancala(*ms);
 		move = chooseMove(*ms);
 		if (move == ERR) {
 			return ERR;
 		}
-
+		//printf("Choice from %d has been %d.\n", ms->player_turn, move);
 		ret = makeMove(ms, move);
 		if (ret == ERR) {
 			return ERR;
@@ -343,6 +333,7 @@ short playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, s
 	}
 
 	ret = gameWinner(*ms);
+	printMancala(*ms);
 
 	freeMancalaGame(ms);
 

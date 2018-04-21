@@ -8,7 +8,7 @@ MANC = mancala
 HEUR = heuristic
 
 CC = gcc
-FLAGS = -Wall -std=c99 -O2 -I$(HEADDIR)
+FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
 
 .PHONY: all
 

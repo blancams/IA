@@ -33,7 +33,7 @@ void freeHextree(struct hextree_node *node) {
 
 	for (i=0; i<6; i++) {
 		if (node->children[i] != NULL) {
-			free(node->children[i]);
+			freeHextree(node->children[i]);
 		}
 	}
 
@@ -121,6 +121,9 @@ struct hextree_node* negaMax(struct hextree_node *node, short color) {
 
 	node->value = SHRT_MIN;
 	for (i=0; i<6; i++) {
+		if (node->children[i] == NULL) {
+			continue;
+		}
 		node_aux = negaMax(node->children[i], -1*color);
 		node_aux->value *= -1;
 		if (node_aux->value > node->value) {
