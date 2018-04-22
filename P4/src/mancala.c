@@ -264,7 +264,7 @@ short makeMove(struct mancala_state *ms, short move) {
 		if (isSteal(*ms, hole_end)) {
 			ms->hole[ophole_end] = ms->hole[hole_end];
 			ms->hole[hole_end] = 0;
-		} */
+		}*/
 
 		if (mustRepeatTurn(*ms, hole_end)) {
 			ms->kalaha_flag = T;
@@ -406,7 +406,7 @@ struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short 
 		if (move == ERR) {
 			return NULL;
 		}
-		//printf("Choice from %hi has been hi.\n", ms->player_turn, move);
+		//printf("Choice from %hi has been %hi.\n", ms->player_turn, move);
 		ret = makeMove(ms, move);
 		if (ret == ERR) {
 			return NULL;

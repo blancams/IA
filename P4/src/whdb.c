@@ -20,12 +20,18 @@ struct whdb* createWHDB(int max_heur) {
     whdb->max_heur = max_heur;
     whdb->cur_heur = 0;
 
+    whdb->weights = (short **) malloc(max_heur*sizeof(short*));
+    if (whdb->weights == NULL) {
+        return NULL;
+    }
+
     for (i=0; i<max_heur; i++) {
         whdb->weights[i] = (short *) malloc(14*sizeof(short));
         if (whdb->weights[i] == NULL) {
             for (j=i-1; j>=0; j--) {
                 free(whdb->weights[j]);
             }
+            free(whdb->weights);
             free(whdb);
             return NULL;
         }
@@ -41,6 +47,7 @@ void freeWHDB(struct whdb *whdb) {
         free(whdb->weights[i]);
     }
 
+    free(whdb->weights);
     free(whdb);
 
     return;
@@ -75,13 +82,21 @@ short* getWHDB(struct whdb *whdb, int position) {
     return whdb->weights[position];
 }
 
-struct whdb* loadWHDB() {
+short getNumWHDB(struct whdb *whdb) {
+    if (whdb == NULL) {
+        return ERR;
+    }
+
+    return whdb->cur_heur;
+}
+
+struct whdb* loadWHDB(char *filename) {
     struct whdb *whdb;
     int i, num_heur;
     short weights[14], j;
     FILE *file;
 
-    file = fopen("dbs/whdb", "r");
+    file = fopen(filename, "r");
     if (file == NULL) {
         return NULL;
     }
@@ -110,7 +125,7 @@ struct whdb* loadWHDB() {
     return whdb;
 }
 
-short saveWHDB(struct whdb *whdb) {
+short saveWHDB(struct whdb *whdb, char *filename) {
     int i;
     short j;
     FILE *file;
@@ -119,8 +134,9 @@ short saveWHDB(struct whdb *whdb) {
         return ERR;
     }
 
-    file = fopen("dbs/whdb", "w");
+    file = fopen(filename, "w");
     if (file == NULL) {
+        freeWHDB(whdb);
         return ERR;
     }
 

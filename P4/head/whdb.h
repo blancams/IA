@@ -14,7 +14,8 @@ void freeWHDB(struct whdb *whdb);
 short canAddWHDB(struct whdb *whdb);
 short addWHDB(struct whdb *whdb, short *weights);
 short* getWHDB(struct whdb *whdb, int position);
-struct whdb* loadWHDB();
-short saveWHDB(struct whdb *whdb);
+short getNumWHDB(struct whdb *whdb);
+struct whdb* loadWHDB(char *filename);
+short saveWHDB(struct whdb *whdb, char *filename);
 
 #endif

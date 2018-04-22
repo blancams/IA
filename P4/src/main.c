@@ -6,6 +6,7 @@
 #include "heuristic.h"
 #include "globals.h"
 #include "whdb.h"
+#include "main.h"
 
 // All of the tests below are performed with depth 2. For other depths, other tests
 // must be created.
@@ -16,32 +17,32 @@ short testAgainstRegular (heuristic htest, short *heur_values) {
 	winner = playMancala(0, htest, hreg, 2, 2, heur_values, NULL);
 	if (winner->winner != 1) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(1, htest, hreg, 2, 2, heur_values, NULL);
 	if (winner->winner != 1) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(0, hreg, htest, 2, 2, NULL, heur_values);
 	if (winner->winner != 2) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(1, hreg, htest, 2, 2, NULL, heur_values);
 	if (winner->winner != 2) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
-	return OK;
+	return T;
 }
 
 short testAgainstGood (heuristic htest, short *heur_values) {
@@ -51,32 +52,32 @@ short testAgainstGood (heuristic htest, short *heur_values) {
 	winner = playMancala(0, htest, hreg, 2, 3, heur_values, NULL);
 	if (winner->winner != 1) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(1, htest, hreg, 2, 3, heur_values, NULL);
 	if (winner->winner != 1) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(0, hreg, htest, 3, 2, NULL, heur_values);
 	if (winner->winner != 2) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
 	winner = playMancala(1, hreg, htest, 3, 2, NULL, heur_values);
 	if (winner->winner != 2) {
 		free(winner);
-		return ERR;
+		return F;
 	}
 	free(winner);
 
-	return OK;
+	return T;
 }
 
 // Heuristics generated with heuristicWeight
@@ -97,7 +98,7 @@ short testWHAgainstWH (short player_turn, short *heur_values1, short *heur_value
 
 // WHDB = weighted heuristics (generated through a 14-size vector of weights and the
 // function heuristicWeight) data base. Returns win rate.
-float testAgainstWHDB (heuristic htest, short *heur_values, struct whdb *whdb) {
+float testWHAgainstWHDB (short *heur_values, struct whdb *whdb) {
 	short i, wins, ret;
 	float win_rate;
 
@@ -132,10 +133,50 @@ float testAgainstWHDB (heuristic htest, short *heur_values, struct whdb *whdb) {
 	return win_rate;
 }
 
+// Assumes that a WHDB exists in 'filename' and tests each of the heuristics with
+// the rest. It generates (n+4)^2 games where n is the number of heuristics, so be
+// careful with the size of the database if you don't want to murder your computer.
+// Returns the weighted heuristic as a vector of size 14 (pointer).
+short* testSimpleWHDB (char *filename) {
+	int i, cur_heur;
+	short *heur_max, *heur_aux;
+	float win_rate = -1.0, win_rate_aux;
+	struct whdb *whdb;
+	heuristic h = heuristicWeight;
+
+	whdb = loadWHDB(filename);
+	if (whdb == NULL) {
+		return NULL;
+	}
+
+	cur_heur = getNumWHDB(whdb);
+	for (i=0; i<cur_heur; i++) {
+		if (i%500==0) printf("%d: little control.\n", i);
+
+		heur_aux = getWHDB(whdb, i);
+
+		if (!testAgainstRegular(h, heur_aux)) {
+			continue;
+		}
+
+		win_rate_aux = testWHAgainstWHDB(heur_aux, whdb);
+		if (win_rate_aux > win_rate) {
+			win_rate = win_rate_aux;
+			heur_max = heur_aux;
+		}
+	}
+
+	freeWHDB(whdb);
+
+	printf("Win rate of champion: %f\n", win_rate);
+	return heur_max;
+}
+
 int main() {
 	struct result *winner;
 	heuristic h1 = heuristicIARegular;
 	heuristic h2 = heuristicIABuena;
+	short i, *hwin;
 
 	printf("De momento un partidito de prueba entre el Regular y el Bueno.\n");
 
@@ -144,9 +185,69 @@ int main() {
 		printf("Algo paso wey.\n");
 		return ERR;
 	}
-
 	printf("Ha ganado el %hi con un marcador de %hi - %hi.\n", winner->winner, winner->score1, winner->score2);
 	free(winner);
+
+	hwin = testSimpleWHDB("dbs/whdb_simple");
+	printf("Champion: [ ");
+	for (i=0; i<14; i++) {
+		printf("%d ", hwin[i]);
+	}
+	printf("]\n");
+
+	return OK;
+}
+
+// Recursive function to generate every possible 14-size vector with 1 and -1
+short genSimpleWH (struct whdb *whdb, short *values, short index) {
+	short ret;
+
+	values[index] = 1;
+
+	if (index == 13) {
+		printf("Añadiendo [%d %d %d %d %d %d %d %d %d %d %d %d %d %d]\n", values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]);
+		addWHDB(whdb, values);
+	} else {
+		ret = genSimpleWH(whdb, values, index+1);
+		if (ret == ERR) {
+			return ERR;
+		}
+	}
+
+	values[index] = -1;
+
+	if (index == 13) {
+		printf("Añadiendo [%d %d %d %d %d %d %d %d %d %d %d %d %d %d]\n", values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]);
+		addWHDB(whdb, values);
+	} else {
+		ret = genSimpleWH(whdb, values, index+1);
+		if (ret == ERR) {
+			return ERR;
+		}
+	}
+
+	return OK;
+}
+
+// Creates a file in which to store the data base generated by the previous function
+short createSimpleWHDB(char *filename) {
+	struct whdb *whdb;
+	short ret, values[14];
+
+	whdb = loadWHDB(filename);
+	if (whdb == NULL) {
+		return ERR;
+	}
+
+	ret = genSimpleWH(whdb, values, 0);
+	if (ret == ERR) {
+		return ERR;
+	}
+
+	ret = saveWHDB(whdb, filename);
+	if (ret == ERR) {
+		return ERR;
+	}
 
 	return OK;
 }
