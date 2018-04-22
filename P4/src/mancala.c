@@ -414,7 +414,6 @@ struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short 
 	}
 
 	ret = gameWinner(*ms);
-	printMancala(*ms);
 
 	res->winner = ret;
 	res->score1 = countSeeds(*ms, 0, 0);

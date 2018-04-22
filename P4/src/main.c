@@ -139,7 +139,7 @@ float testWHAgainstWHDB (short *heur_values, struct whdb *whdb) {
 // Returns the weighted heuristic as a vector of size 14 (pointer).
 short* testSimpleWHDB (char *filename) {
 	int i, cur_heur;
-	short *heur_max, *heur_aux;
+	short *heur_max, *heur_aux, heur_ret[14];
 	float win_rate = -1.0, win_rate_aux;
 	struct whdb *whdb;
 	heuristic h = heuristicWeight;
@@ -151,7 +151,7 @@ short* testSimpleWHDB (char *filename) {
 
 	cur_heur = getNumWHDB(whdb);
 	for (i=0; i<cur_heur; i++) {
-		if (i%500==0) printf("%d: little control.\n", i);
+		//if (i%500==0) printf("%d: little control.\n", i);
 
 		heur_aux = getWHDB(whdb, i);
 
@@ -166,10 +166,14 @@ short* testSimpleWHDB (char *filename) {
 		}
 	}
 
+	for (i=0; i<14; i++) {
+		heur_ret[i] = heur_max[i];
+	}
+
 	freeWHDB(whdb);
 
 	printf("Win rate of champion: %f\n", win_rate);
-	return heur_max;
+	return heur_ret;
 }
 
 int main() {
@@ -188,12 +192,14 @@ int main() {
 	printf("Ha ganado el %hi con un marcador de %hi - %hi.\n", winner->winner, winner->score1, winner->score2);
 	free(winner);
 
-	hwin = testSimpleWHDB("dbs/whdb_simple");
-	printf("Champion: [ ");
-	for (i=0; i<14; i++) {
-		printf("%d ", hwin[i]);
-	}
-	printf("]\n");
+	createSimpleWHDB("dbs/whdb_simple");
+
+	// hwin = testSimpleWHDB("dbs/whdb_simple");
+	// printf("Champion: [ ");
+	// for (i=0; i<14; i++) {
+	// 	printf("%d ", hwin[i]);
+	// }
+	// printf("]\n");
 
 	return OK;
 }
@@ -205,7 +211,6 @@ short genSimpleWH (struct whdb *whdb, short *values, short index) {
 	values[index] = 1;
 
 	if (index == 13) {
-		printf("Añadiendo [%d %d %d %d %d %d %d %d %d %d %d %d %d %d]\n", values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]);
 		addWHDB(whdb, values);
 	} else {
 		ret = genSimpleWH(whdb, values, index+1);
@@ -217,7 +222,6 @@ short genSimpleWH (struct whdb *whdb, short *values, short index) {
 	values[index] = -1;
 
 	if (index == 13) {
-		printf("Añadiendo [%d %d %d %d %d %d %d %d %d %d %d %d %d %d]\n", values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]);
 		addWHDB(whdb, values);
 	} else {
 		ret = genSimpleWH(whdb, values, index+1);

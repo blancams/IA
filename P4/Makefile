@@ -24,4 +24,4 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -o $@ -c $^ $(FLAGS)
 
 clean:
-	rm $(BUILDDIR)/*
+	rm $(BUILDDIR)/* $(MAIN)
