@@ -43,10 +43,13 @@ short heuristicWeight(struct mancala_state ms, short *weights) {
 	op = oppositePlayer(ms);
 
 	if (gameHasEnded(ms)) {
-		if (gameWinner(ms) == cp) {
+		win = gameWinner(ms);
+		if (win == cp + 1) {
 			return SHRT_MAX;
-		} else {
+		} else if (win == op + 1){
 			return SHRT_MIN;
+		} else {
+			return 0;
 		}
 	}
 
