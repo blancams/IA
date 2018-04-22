@@ -37,7 +37,7 @@ short heuristicIABuena(struct mancala_state ms, short *empty) {
 // are used for the current player and the other 7 for the opposite player.
 // Also takes into account the existence of a winner.
 short heuristicWeight(struct mancala_state ms, short *weights) {
-	short i, sum, cp, op;
+	short i, sum, cp, op, win;
 
 	cp = currentPlayer(ms);
 	op = oppositePlayer(ms);
