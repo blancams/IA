@@ -12,6 +12,7 @@ struct hextree_node;
 struct strategy {
 	heuristic h;
 	short depth;
+	short *heur_values;
 };
 
 struct mancala_state {
@@ -33,7 +34,7 @@ struct mancala_state* createMancalaGame(short *player_1, short *player_2, short 
 void freeMancalaGame(struct mancala_state *ms);
 
 // Creation and deletion of a strategy
-struct strategy* createStrategy(heuristic h, short depth);
+struct strategy* createStrategy(heuristic h, short depth, short *heur_values);
 void freeStrategy(struct strategy *str);
 
 // Obtaining of useful information
@@ -63,6 +64,6 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 short chooseMove(struct mancala_state ms);
 
 // Play the game! (and return the winner)
-struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2);
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, short *heur_values1, short *heur_values2);
 
 #endif
