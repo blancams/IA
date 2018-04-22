@@ -87,7 +87,7 @@ struct whdb* loadWHDB() {
     }
 
     fscanf(file, "%d ", &num_heur);
-    if (num_heur > MAX_WHDB) {
+    if (num_heur > MAX_WHDB || num_heur < 0) {
         fclose(file);
         return NULL;
     }
