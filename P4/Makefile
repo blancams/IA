@@ -6,6 +6,7 @@ MAIN = main
 HEXT = hextree
 MANC = mancala
 HEUR = heuristic
+WHDB = whdb
 
 CC = gcc
 FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
@@ -14,7 +15,7 @@ FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
 
 all: $(MAIN)
 
-$(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUILDDIR)/$(HEUR).o
+$(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUILDDIR)/$(HEUR).o $(BUILDDIR)/$(WHDB).o
 	@echo Linking $@: $^
 	$(CC) -o $@ $^ $(FLAGS)
 

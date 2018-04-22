@@ -67,10 +67,10 @@ void freeMancalaGame(struct mancala_state *ms) {
 
 void printMancala(struct mancala_state ms) {
 	printf("\n");
-	printf("J2: %d\t\t\t  J1: %d\n", ms.hole[13], ms.hole[6]);
-	printf("%d     %d     %d     %d     %d     %d\n", ms.hole[12], ms.hole[11], ms.hole[10], ms.hole[9], ms.hole[8], ms.hole[7]);
+	printf("J2: %hi\t\t\t  J1: %hi\n", ms.hole[13], ms.hole[6]);
+	printf("%hi     %hi     %hi     %hi     %hi     %hi\n", ms.hole[12], ms.hole[11], ms.hole[10], ms.hole[9], ms.hole[8], ms.hole[7]);
 	printf("-------------------------------\n");
-	printf("%d     %d     %d     %d     %d     %d\n", ms.hole[0], ms.hole[1], ms.hole[2], ms.hole[3], ms.hole[4], ms.hole[5]);
+	printf("%hi     %hi     %hi     %hi     %hi     %hi\n", ms.hole[0], ms.hole[1], ms.hole[2], ms.hole[3], ms.hole[4], ms.hole[5]);
 	printf("\n");
 }
 
@@ -406,7 +406,7 @@ struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short 
 		if (move == ERR) {
 			return NULL;
 		}
-		//printf("Choice from %d has been %d.\n", ms->player_turn, move);
+		//printf("Choice from %hi has been hi.\n", ms->player_turn, move);
 		ret = makeMove(ms, move);
 		if (ret == ERR) {
 			return NULL;
