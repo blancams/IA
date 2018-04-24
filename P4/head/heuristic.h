@@ -3,10 +3,12 @@
 
 struct mancala_state;
 
-typedef short (*heuristic)(struct mancala_state, short*);
+typedef float (*heuristic)(struct mancala_state, float*);
 
-short heuristicIARegular(struct mancala_state ms, short *empty);
-short heuristicIABuena(struct mancala_state ms, short *empty);
-short heuristicWeight(struct mancala_state ms, short *weights);
+float heuristicIARegular(struct mancala_state ms, float *empty);
+float heuristicIABuena(struct mancala_state ms, float *empty);
+float heuristicWeight(struct mancala_state ms, float *weights);
+
+float *generateRandomWH(float min, float max);
 
 #endif

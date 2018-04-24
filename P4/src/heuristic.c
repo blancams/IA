@@ -5,8 +5,12 @@
 #include "heuristic.h"
 #include "mancala.h"
 
+/**********************************/
+/*********** HEURISTICS ***********/
+/**********************************/
+
 // Only with even depth
-short heuristicIARegular(struct mancala_state ms, short *empty) {
+float heuristicIARegular(struct mancala_state ms, float *empty) {
 	short sum1, sum2, cp, op;
 
 	// With even depth, cp is the player who has the turn
@@ -20,7 +24,7 @@ short heuristicIARegular(struct mancala_state ms, short *empty) {
 }
 
 // Only with odd depth
-short heuristicIABuena(struct mancala_state ms, short *empty) {
+float heuristicIABuena(struct mancala_state ms, float *empty) {
 	short sum1, sum2, cp, op;
 
 	// With odd depth, op is the player who has the turn
@@ -36,8 +40,9 @@ short heuristicIABuena(struct mancala_state ms, short *empty) {
 // Only with even depth. Assumes 'weights' is of size 14, the first 7 weights
 // are used for the current player and the other 7 for the opposite player.
 // Also takes into account the existence of a winner.
-short heuristicWeight(struct mancala_state ms, short *weights) {
-	short i, sum, cp, op, win;
+float heuristicWeight(struct mancala_state ms, float *weights) {
+	short i, cp, op, win;
+	float sum;
 
 	cp = currentPlayer(ms);
 	op = oppositePlayer(ms);
@@ -45,18 +50,41 @@ short heuristicWeight(struct mancala_state ms, short *weights) {
 	if (gameHasEnded(ms)) {
 		win = gameWinner(ms);
 		if (win == cp + 1) {
-			return 50;
+			return 361.0;
 		} else if (win == op + 1){
-			return -50;
+			return -361.0;
 		} else {
-			return 0;
+			return -361.0;
 		}
 	}
 
-	for (i=0, sum=0; i<7; i++) {
+	for (i=0, sum=0.0; i<7; i++) {
 		sum += weights[i] * getSeeds(ms, cp, i);
 		sum += weights[i+7] * getSeeds(ms, op, i);
 	}
 
 	return sum;
+}
+
+
+/**********************************/
+/*********** AUXILIARYF ***********/
+/**********************************/
+
+// Caller must free memory
+float *generateRandomWH(float min, float max) {
+	float size = max-min;
+	float *vector;
+	short i;
+
+	vector = (float*) malloc(14*sizeof(float));
+	if (vector == NULL) {
+		return NULL;
+	}
+
+	for (i=0; i<14; i++) {
+		vector[i] = ((float)rand()/(float)(RAND_MAX))*size + min;
+	}
+
+	return vector;
 }

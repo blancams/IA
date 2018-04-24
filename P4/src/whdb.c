@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "whdb.h"
 
+/* WHDB management */
+
 struct whdb* createWHDB(int max_heur) {
     struct whdb *whdb;
     int i, j;
@@ -19,14 +21,16 @@ struct whdb* createWHDB(int max_heur) {
 
     whdb->max_heur = max_heur;
     whdb->cur_heur = 0;
+    whdb->win_index = -1;
+    whdb->min_win_rate = 0.0;
 
-    whdb->weights = (short **) malloc(max_heur*sizeof(short*));
+    whdb->weights = (float **) malloc(max_heur*sizeof(float*));
     if (whdb->weights == NULL) {
         return NULL;
     }
 
     for (i=0; i<max_heur; i++) {
-        whdb->weights[i] = (short *) malloc(14*sizeof(short));
+        whdb->weights[i] = (float *) malloc(14*sizeof(float));
         if (whdb->weights[i] == NULL) {
             for (j=i-1; j>=0; j--) {
                 free(whdb->weights[j]);
@@ -58,7 +62,7 @@ short canAddWHDB(struct whdb *whdb) {
     return whdb->cur_heur < whdb->max_heur;
 }
 
-short addWHDB(struct whdb *whdb, short *weights) {
+short addWHDB(struct whdb *whdb, float *weights) {
     short i;
 
     if (whdb == NULL || !canAddWHDB(whdb)) {
@@ -74,7 +78,7 @@ short addWHDB(struct whdb *whdb, short *weights) {
     return OK;
 }
 
-short* getWHDB(struct whdb *whdb, int position) {
+float* getWHDB(struct whdb *whdb, int position) {
     if (whdb == NULL) {
         return NULL;
     }
@@ -93,7 +97,8 @@ short getNumWHDB(struct whdb *whdb) {
 struct whdb* loadWHDB(char *filename) {
     struct whdb *whdb;
     int i, num_heur;
-    short weights[14], j;
+    short j;
+    float weights[14];
     FILE *file;
 
     file = fopen(filename, "r");
@@ -113,9 +118,14 @@ struct whdb* loadWHDB(char *filename) {
         return NULL;
     }
 
+    fscanf(file, "%d ", &whdb->win_index);
+    if (whdb->win_index != -1) {
+        fscanf(file, "%f ", &whdb->min_win_rate);
+    }
+
     for (i=0; i<num_heur; i++) {
         for (j=0; j<14; j++) {
-            fscanf(file, "%hi ", &weights[j]);
+            fscanf(file, "%f ", &weights[j]);
         }
         addWHDB(whdb, weights);
     }
@@ -141,14 +151,79 @@ short saveWHDB(struct whdb *whdb, char *filename) {
     }
 
     fprintf(file, "%d ", whdb->cur_heur);
+    fprintf(file, "%d ", whdb->win_index);
+    if (whdb->win_index != -1) {
+        fprintf(file, "%f ", whdb->min_win_rate);
+    }
 
     for (i=0; i<whdb->cur_heur; i++) {
         for (j=0; j<14; j++) {
-            fprintf(file, "%hi ", whdb->weights[i][j]);
+            fprintf(file, "%f ", whdb->weights[i][j]);
         }
     }
 
     fclose(file);
     freeWHDB(whdb);
+    return OK;
+}
+
+// Assumes whdb != NULL
+float getWinRateWHDB(struct whdb *whdb) {
+
+    return whdb->min_win_rate;
+}
+
+
+/* WHDB testing */
+
+// Assumes whdb != NULL
+short isEnabledTestingWHDB(struct whdb *whdb) {
+
+    return whdb->win_index != -1;
+}
+
+void enableTestingWHDB (struct whdb *whdb, float min_win_rate) {
+    if (whdb == NULL) {
+        return;
+    }
+
+    if (whdb->win_index == -1) {
+        whdb->win_index = 0;
+        whdb->min_win_rate = min_win_rate;
+    }
+
+    return;
+}
+
+void disableTestingWHDB (struct whdb *whdb) {
+    if (whdb == NULL) {
+        return;
+    }
+
+    whdb->win_index = -1;
+    whdb->min_win_rate = 0.0;
+    return;
+}
+
+short updateRandomWHDB (struct whdb *whdb, float *new_weights) {
+    short i;
+
+    if (whdb == NULL || new_weights == NULL) {
+        return ERR;
+    }
+
+    for (i=0; i<14; i++) {
+        whdb->weights[whdb->win_index][i] = new_weights[i];
+    }
+
+    whdb->win_index++;
+    if (whdb->win_index == whdb->cur_heur) {
+        whdb->win_index = 0;
+    }
+
+    if (whdb->min_win_rate < 90.0) {
+        whdb->min_win_rate += WR_INC;
+    }
+
     return OK;
 }

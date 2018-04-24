@@ -96,7 +96,7 @@ short getIndex(struct hextree_node *node) {
 	return node->index;
 }
 
-short setValue(struct hextree_node *node, short value) {
+short setValue(struct hextree_node *node, float value) {
 	if (node == NULL) {
 		return ERR;
 	}

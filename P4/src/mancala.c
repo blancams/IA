@@ -31,7 +31,7 @@ struct mancala_state* createMancalaGame(short *player_1, short *player_2, short 
 	return ms;
 }
 
-struct strategy* createStrategy(heuristic h, short depth, short *heur_values) {
+struct strategy* createStrategy(heuristic h, short depth, float *heur_values) {
 	struct strategy *str;
 
 	str = (struct strategy*) malloc(sizeof(struct strategy));
@@ -285,7 +285,8 @@ short makeMove(struct mancala_state *ms, short move) {
 }
 
 short buildHextree(struct hextree_node *node, short depth, struct mancala_state ms, struct strategy *str) {
-	short i, value, ret, flag = 0;
+	short i, ret, flag = 0;
+	float value;
 	struct mancala_state ms_child;
 	struct hextree_node *child;
 
@@ -373,7 +374,7 @@ short chooseMove(struct mancala_state ms) {
 	return ret;
 }
 
-struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, short *heur_values1, short *heur_values2) {
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, float *heur_values1, float *heur_values2) {
 	struct mancala_state *ms;
 	struct strategy *str1, *str2;
 	struct result *res;
