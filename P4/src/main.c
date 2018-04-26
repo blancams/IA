@@ -16,7 +16,7 @@ void printArgumentInfo(char *instruction) {
 	} else if (!strcmp(instruction, "-b")) {
 		printf("-b <file_name> <number_heuristics> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-u")) {
-		printf("-u <file_name> <type_upload> <num_iterations> <min_weight> <max_weight>\n");
+		printf("-u <file_name> <type_update> <num_iterations> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-p")) {
 		printf("-p <file_name> <position>\n");
 	} else if (!strcmp(instruction, "-ia")) {
@@ -55,20 +55,20 @@ void printHelp() {
 	printf("\n");
 	printArgumentInfo("-u");
 	printf("\tUploads the data base in a file through with the desired options:\n");
-	printf("\t\tfile_name:          name of the file from which to load the data base\n");
-	printf("\t\ttype_upload:        type of heuristic generation (random, genetic)\n");
+	printf("\t\tfile_name:          name of the file from which to load the data base (it must exist)\n");
+	printf("\t\ttype_update:        type of heuristic generation (random, genetic)\n");
 	printf("\t\titerations:         number of heuristics generated to upload the data base\n");
 	printf("\t\tmin_weight:         minimum possible weight as a float number\n");
 	printf("\t\tmax_weight:         maximum possible weight as a float number\n");
 	printf("\n");
 	printArgumentInfo("-p");
 	printf("\tPrints one specific heuristic (its 14 weights) from a data base with the desired options:\n");
-	printf("\t\tfile_name:          name of the file from which to load the heuristic\n");
+	printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
 	printf("\t\tposition:           index of the heuristic in the data base (if -1, prints the last one generated)\n");
 	printf("\n");
 	printArgumentInfo("-ia");
 	printf("\tGenerates the text of the .cl file required for Artificial Intelligence uploads:\n");
-	printf("\t\tfile_name:          name of the file from which to load the heuristic\n");
+	printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
 	printf("\t\tgroup:              group of the team/pair (always two digits)\n");
 	printf("\t\tteam:               number of the team/pair (always two digits)\n");
 	printf("\t\tnumber:             number of the file (1, 2 or 3)\n");
