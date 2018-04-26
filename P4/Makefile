@@ -13,7 +13,10 @@ FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
 
 .PHONY: all clean
 
-all: $(MAIN)
+all: before $(MAIN)
+
+before:
+	@[ -d $(BUILDDIR) ] || mkdir $(BUILDDIR)
 
 $(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUILDDIR)/$(HEUR).o $(BUILDDIR)/$(WHDB).o
 	@echo Linking $@: $^
@@ -24,4 +27,4 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -o $@ -c $^ $(FLAGS)
 
 clean:
-	rm $(BUILDDIR)/* $(MAIN)
+	@rm -f ./$(BUILDDIR)/* $(MAIN)

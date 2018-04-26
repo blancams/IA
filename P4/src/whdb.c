@@ -10,7 +10,7 @@ struct whdb* createWHDB(int max_heur) {
     struct whdb *whdb;
     int i, j;
 
-    if (max_heur < 0 || max_heur > MAX_WHDB) {
+    if (max_heur < 5 || max_heur > MAX_WHDB) {
         return NULL;
     }
 
@@ -78,20 +78,41 @@ short addWHDB(struct whdb *whdb, float *weights) {
     return OK;
 }
 
+// Size of database more than 5 at least, please.
 float* getWHDB(struct whdb *whdb, int position) {
+    int pos;
+
     if (whdb == NULL) {
         return NULL;
     }
 
-    return whdb->weights[position];
+    if (whdb->cur_heur < position) {
+        return NULL;
+    }
+
+    if (position < 0) {
+        pos = position + whdb->cur_heur;
+    } else {
+        pos = position;
+    }
+
+    return whdb->weights[pos];
 }
 
-short getNumWHDB(struct whdb *whdb) {
+int getNumWHDB(struct whdb *whdb) {
     if (whdb == NULL) {
         return ERR;
     }
 
     return whdb->cur_heur;
+}
+
+int getWindexWHDB(struct whdb *whdb) {
+    if(whdb == NULL) {
+        return ERR;
+    }
+
+    return whdb->win_index;
 }
 
 struct whdb* loadWHDB(char *filename) {
@@ -205,7 +226,7 @@ void disableTestingWHDB (struct whdb *whdb) {
     return;
 }
 
-short updateRandomWHDB (struct whdb *whdb, float *new_weights) {
+short updateAfterTestWHDB (struct whdb *whdb, float *new_weights) {
     short i;
 
     if (whdb == NULL || new_weights == NULL) {

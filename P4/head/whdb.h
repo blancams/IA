@@ -18,7 +18,8 @@ void freeWHDB(struct whdb *whdb);
 short canAddWHDB(struct whdb *whdb);
 short addWHDB(struct whdb *whdb, float *weights);
 float* getWHDB(struct whdb *whdb, int position);
-short getNumWHDB(struct whdb *whdb);
+int getNumWHDB(struct whdb *whdb);
+int getWindexWHDB(struct whdb *whdb);
 struct whdb* loadWHDB(char *filename);
 short saveWHDB(struct whdb *whdb, char *filename);
 float getWinRateWHDB(struct whdb *whdb);
@@ -26,6 +27,6 @@ float getWinRateWHDB(struct whdb *whdb);
 short isEnabledTestingWHDB(struct whdb *whdb);
 void enableTestingWHDB (struct whdb *whdb, float min_win_rate);
 void disableTestingWHDB (struct whdb *whdb);
-short updateRandomWHDB (struct whdb *whdb, float *new_weights);
+short updateAfterTestWHDB (struct whdb *whdb, float *new_weights);
 
 #endif

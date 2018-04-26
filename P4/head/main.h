@@ -23,7 +23,7 @@ float testWHAgainstWHDB (float *heur_values, struct whdb *whdb);
 short testSimpleWHDB (char *filename);
 
 short buildRandomWHDB (char *filename, int num_heur, float min_h, float max_h);
-short iterationUpdateWHDB (struct whdb *whdb, float min_h, float max_h);
-short updateWHDB (char *filename, int iterations, float min_h, float max_h);
+short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights, float min_h, float max_h);
+short updateWHDB (char *filename, char *generateWHChoice, int iterations, float min_h, float max_h);
 
 #endif

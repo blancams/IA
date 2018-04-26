@@ -71,8 +71,8 @@ float heuristicWeight(struct mancala_state ms, float *weights) {
 /*********** AUXILIARYF ***********/
 /**********************************/
 
-// Caller must free memory
-float *generateRandomWH(float min, float max) {
+// Caller must free memory. Assumes empty == NULL.
+float *generateRandomWH(float *empty, float min, float max) {
 	float size = max-min;
 	float *vector;
 	short i;
@@ -84,6 +84,28 @@ float *generateRandomWH(float min, float max) {
 
 	for (i=0; i<14; i++) {
 		vector[i] = ((float)rand()/(float)(RAND_MAX))*size + min;
+	}
+
+	return vector;
+}
+
+// Caller must free memory.
+float* generateSimilarWH(float *init_weights, float min, float max) {
+	float *vector, incr, size = MAX_INCR - MIN_INCR;
+	short i;
+
+	vector = (float*) malloc(14*sizeof(float));
+	if (vector == NULL) {
+		return NULL;
+	}
+
+	for (i=0; i<14; i++) {
+		incr = ((float)rand()/(float)(RAND_MAX))*size + MIN_INCR + init_weights[i];
+		if (incr <= max && incr >= min) {
+			vector[i] = incr;
+		} else {
+			vector[i] = init_weights[i];
+		}
 	}
 
 	return vector;

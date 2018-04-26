@@ -374,7 +374,7 @@ short chooseMove(struct mancala_state ms) {
 	return ret;
 }
 
-struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, float *heur_values1, float *heur_values2) {
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, float *heur_values1, float *heur_values2, short flag) {
 	struct mancala_state *ms;
 	struct strategy *str1, *str2;
 	struct result *res;
@@ -401,19 +401,30 @@ struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short 
 		return NULL;
 	}
 
+	printf("Let's start the game!\n");
 	while(!gameHasEnded(*ms)) {
-		//printMancala(*ms);
+		if (flag) {
+			printMancala(*ms);
+		}
+
 		move = chooseMove(*ms);
 		if (move == ERR) {
 			return NULL;
 		}
-		//printf("Choice from %hi has been %hi.\n", ms->player_turn, move);
+
+		if (flag) {
+			printf("Choice from %hi has been %hi.", ms->player_turn, move);
+		}
+
 		ret = makeMove(ms, move);
 		if (ret == ERR) {
 			return NULL;
 		}
 	}
 
+	if (flag) {
+		printMancala(*ms);
+	}
 	ret = gameWinner(*ms);
 
 	res->winner = ret;

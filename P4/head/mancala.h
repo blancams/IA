@@ -64,6 +64,6 @@ short buildHextree(struct hextree_node *node, short depth, struct mancala_state 
 short chooseMove(struct mancala_state ms);
 
 // Play the game! (and return the winner)
-struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, float *heur_values1, float *heur_values2);
+struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short depth1, short depth2, float *heur_values1, float *heur_values2, short flag);
 
 #endif
