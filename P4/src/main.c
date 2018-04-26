@@ -374,8 +374,8 @@ int main(int argc, char **argv) {
 
 		sprintf(file_name, "grupo%spareja%s%d%s%s%s", group, team, number, password, day, month);
 		buffer_aux += sprintf(buffer+buffer_aux, "(defpackage :%s            ; se declara un paquete lisp que usa common-lisp\n", file_name);
-		buffer_aux += sprintf(buffer+buffer_aux, "  (:use :common-lisp :mancala)                 ; y mancala, y exporta la función de evaluación)\n");
-		buffer_aux += sprintf(buffer+buffer_aux, "  (:export :heuristica :*alias*))              ; heurística y un alias para el torneo\n\n\n");
+		buffer_aux += sprintf(buffer+buffer_aux, "  (:use :common-lisp :mancala)                 ; y mancala, y exporta la funcion de evaluacion\n");
+		buffer_aux += sprintf(buffer+buffer_aux, "  (:export :heuristica :*alias*))              ; heuristica y un alias para el torneo\n\n\n");
 		buffer_aux += sprintf(buffer+buffer_aux, "(in-package %s)\n\n", file_name);
 		buffer_aux += sprintf(buffer+buffer_aux, "(defun heuristica (estado)\n");
 		buffer_aux += sprintf(buffer+buffer_aux, "  (let ((tablero (estado-tablero estado))\n");
@@ -387,20 +387,20 @@ int main(int argc, char **argv) {
 		buffer_aux += sprintf(buffer+buffer_aux, "            361\n");
 		buffer_aux += sprintf(buffer+buffer_aux, "          -361)\n");
 		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 0) %.2f)\n", weights[0]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 1) %.2f)\n", weights[1]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 2) %.2f)\n", weights[2]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 3) %.2f)\n", weights[3]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 4) %.2f)\n", weights[4]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 5) %.2f)\n", weights[5]);
-		buffer_aux += sprintf(buffer+buffer_aux, "      (+ (* (get-fichas tablero mi-jugador 6) %.2f)\n", weights[6]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 1) %.2f)\n", weights[1]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 2) %.2f)\n", weights[2]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 3) %.2f)\n", weights[3]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 4) %.2f)\n", weights[4]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 5) %.2f)\n", weights[5]);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero mi-jugador 6) %.2f)\n", weights[6]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 0) %.2f)\n", weights[7]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 1) %.2f)\n", weights[8]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 2) %.2f)\n", weights[9]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 3) %.2f)\n", weights[10]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 4) %.2f)\n", weights[11]);
 		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 5) %.2f)\n", weights[12]);
-		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 6) %.2f)\n\n", weights[13]);
-		buffer_aux += sprintf(buffer+buffer_aux, "(defvar *alias* '|%s|) ; alias que aparecerá en el ranking\n", alias);
+		buffer_aux += sprintf(buffer+buffer_aux, "         (* (get-fichas tablero oponente 6) %.2f)))))\n\n", weights[13]);
+		buffer_aux += sprintf(buffer+buffer_aux, "(defvar *alias* '|%s|) ; alias que aparecera en el ranking\n", alias);
 
 		sprintf(file, "cl/%s.cl", file_name);
 		fp = fopen(file, "w");
