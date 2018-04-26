@@ -299,6 +299,8 @@ int main(int argc, char **argv) {
 			printArgumentError(argv[1]);
 			return ERR;
 		}
+
+		printf("Update completed succesfully!\n");
 	} else if (!strcmp(argv[1], "-p")) {
 		struct whdb *whdb;
 		float* weights;
@@ -413,26 +415,6 @@ int main(int argc, char **argv) {
 	}
 
 	return OK;
-
-	// struct whdb *whdb;
-	// heuristic h3 = heuristicWeight;
-	// whdb = loadWHDB("dbs/whdb_random");
-	// printf("[ ");
-	// for (int i=0; i<14; i++) {
-	// 	printf("%f ", whdb->weights[209][i]);
-	// }
-	// printf("]\n");
-	//
-	// printf("Mío contra regular:\n");
-	// winner = playMancala(0, h3, h1, 2, 2, whdb->weights[209], NULL);
-	// if (winner == NULL) {
-	// 	printf("Algo paso wey.\n");
-	// 	return ERR;
-	// }
-	// printf("Ha ganado el %hi con un marcador de %hi - %hi.\n", winner->winner, winner->score1, winner->score2);
-	// free(winner);
-	// freeWHDB(whdb);
-	// return OK;
 }
 
 // All of the tests below are performed with depth 2. For other depths, other tests
@@ -617,7 +599,7 @@ short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights
 	if (testAgainstRegular(h, test_weights) && testAgainstGood(h, test_weights)) {
 		win_rate = testWHAgainstWHDB (test_weights, whdb);
 		if (win_rate > getWinRateWHDB(whdb)) {
-			printf("Yujus! Con %f en posicion %d\n", win_rate, whdb->win_index);
+			printf("Éxito! Heurística con %f guardada en posicion %d.\n", win_rate, whdb->win_index);
 			updateAfterTestWHDB(whdb, test_weights);
 		}
 	}
@@ -666,8 +648,6 @@ short updateWHDB (char *filename, char *generateWHChoice, int iterations, float 
 			break;
 		}
 	}
-
-	printf("El win rate al final es: %f\n", getWinRateWHDB(whdb));
 
 	ret = saveWHDB(whdb, filename);
 	if (ret == ERR) {

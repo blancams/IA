@@ -401,7 +401,9 @@ struct result* playMancala(short player_turn, heuristic h1, heuristic h2, short 
 		return NULL;
 	}
 
-	printf("Let's start the game!\n");
+	if (flag) {
+		printf("Let's start the game!\n");
+	}
 	while(!gameHasEnded(*ms)) {
 		if (flag) {
 			printMancala(*ms);
