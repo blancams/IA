@@ -260,11 +260,10 @@ short makeMove(struct mancala_state *ms, short move) {
 			ms->hole[ophole_end] = 0;
 		}
 
-		/* They are such fucking sons of a b****
 		if (isSteal(*ms, hole_end)) {
 			ms->hole[ophole_end] = ms->hole[hole_end];
 			ms->hole[hole_end] = 0;
-		}*/
+		}
 
 		if (mustRepeatTurn(*ms, hole_end)) {
 			ms->kalaha_flag = T;
