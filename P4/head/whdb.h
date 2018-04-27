@@ -2,8 +2,8 @@
 #define _WHDB_H
 
 #define MAX_WHDB 50000
-#define INIT_WR 60.0
-#define WR_INC 0.1
+#define INIT_WR 70.0
+#define WR_INC 0.05
 
 struct whdb {
     int max_heur;

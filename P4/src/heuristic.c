@@ -90,7 +90,7 @@ float *generateRandomWH(float *empty, float min, float max) {
 }
 
 // Caller must free memory.
-float* generateSimilarWH(float *init_weights, float min, float max) {
+float* generateSimpleMutationWH(float *init_weights, float min, float max) {
 	float *vector, incr, size = MAX_INCR - MIN_INCR;
 	short i;
 

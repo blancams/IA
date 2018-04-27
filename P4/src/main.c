@@ -9,18 +9,96 @@
 #include "globals.h"
 #include "whdb.h"
 #include "main.h"
+#include "genetic.h"
 
 void printArgumentInfo(char *instruction) {
 	if (!strcmp(instruction, "-g")) {
-		printf("-g <player_turn> <depth> <see_flag> <heuristic_player_1> <heuristic_player_2> <weights_player_1[14]> <weights_player_2[14]>\n");
+		printf("-g <player_turn> <depth> <see_flag> <heuristic_player_1> <heuristic_player_2> [weights_player_1(14)] [weights_player_2(14)]\n");
 	} else if (!strcmp(instruction, "-b")) {
+		printf("-b <file_name> <number_heuristics> <min_weight> <max_weight>\n");
+	} else if (!strcmp(instruction, "-bq")) {
 		printf("-b <file_name> <number_heuristics> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-u")) {
 		printf("-u <file_name> <type_update> <num_iterations> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-p")) {
 		printf("-p <file_name> <position>\n");
 	} else if (!strcmp(instruction, "-ia")) {
-		printf("-ia <file_name> <group> <team> <number> <password> <day> <month> <alias>");
+		printf("-ia <file_name> <group> <team> <number> <password> <day> <month> <alias>\n");
+	} else if (!strcmp(instruction, "-gu")) {
+		printf("-gu <file_name> <num_iterations> <min_win_rate> <cross_rate> <mut_range> <mut_prob> <min_weight> <max_weight>\n");
+	} else if (!strcmp(instruction, "-h")) {
+		printf("-h [instruction]\n");
+	}
+
+	return;
+}
+
+void printArgumentDetail(char *instruction) {
+	if (!strcmp(instruction, "-g")) {
+		printf("\tPlays a Mancala game with the desired options:\n");
+		printf("\t\tplayer_turn:        0 -> first player starts the game\n");
+		printf("\t\t                    1 -> second player starts the game\n");
+		printf("\t\tdepth:              desired depth for searching, must be even\n");
+		printf("\t\tsee_flag:           1 -> prints the development of the game\n");
+		printf("\t\t                    0 -> only prints the result\n");
+		printf("\t\theuristic_player_1: name of the heuristic for player 1 (heuristicIARegular, heuristicIABuena or heuristicWeight)\n");
+		printf("\t\theuristic_player_2: name of the heuristic for player 2 (heuristicIARegular, heuristicIABuena or heuristicWeight)\n");
+		printf("\t\tweights_player_1:   fourteen float numbers, weights to apply heuristicWeight for player 1\n");
+		printf("\t\tweights_player_2:   fourteen float numbers, weights to apply heuristicWeight for player 2\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-b")) {
+		printf("\tGenerates a data base of random heuristics with the desired options:\n");
+		printf("\t\tfile_name:          name of the file in which to save the data base.\n");
+		printf("\t\tnumber_heuristics:  number of heuristics to save\n");
+		printf("\t\tmin_weight:         minimum possible weight as a float number\n");
+		printf("\t\tmax_weight:         maximum possible weight as a float number\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-bq")) {
+		printf("\tGenerates a data base of random heuristics that win against 'regular' and 'good' with the desired options:\n");
+		printf("\t\tfile_name:          name of the file in which to save the data base.\n");
+		printf("\t\tnumber_heuristics:  number of heuristics to save\n");
+		printf("\t\tmin_weight:         minimum possible weight as a float number\n");
+		printf("\t\tmax_weight:         maximum possible weight as a float number\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-u")) {
+		printf("\tUploads the data base in a file through with the desired options:\n");
+		printf("\t\tfile_name:          name of the file from which to load the data base (it must exist)\n");
+		printf("\t\ttype_update:        type of heuristic generation (random, simple_mutation)\n");
+		printf("\t\titerations:         number of heuristics generated to upload the data base\n");
+		printf("\t\tmin_weight:         minimum possible weight as a float number\n");
+		printf("\t\tmax_weight:         maximum possible weight as a float number\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-p")) {
+		printf("\tPrints one specific heuristic (its 14 weights) from a data base with the desired options:\n");
+		printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
+		printf("\t\tposition:           index of the heuristic in the data base (if -1, prints the last one generated)\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-ia")) {
+		printf("\tGenerates the text of the .cl file required for Artificial Intelligence uploads:\n");
+		printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
+		printf("\t\tgroup:              group of the team/pair (always two digits)\n");
+		printf("\t\tteam:               number of the team/pair (always two digits)\n");
+		printf("\t\tnumber:             number of the file (1, 2 or 3)\n");
+		printf("\t\tpassword:           two character string that identifies your group\n");
+		printf("\t\tday:                day in which it is going to be uploaded (always two digits)\n");
+		printf("\t\tmonth:              month in which it is going to be uploaded (always two digits)\n");
+		printf("\t\talias:              name of the bot (for example, \"Marvill-1.1.0\")\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-gu")) {
+		printf("\tUploads the data base in a file with a genetic algorithm with these options:\n");
+		printf("\t\tfile_name:          name of the file from which to load the heuristics (it must exist)\n");
+		printf("\t\titerations:         number of tournaments to play with the genetically-modified database\n");
+		printf("\t\tmin_win_rate:       minimum win rate to update the database\n");
+		printf("\t\tcross_rate:         portion of the database in which to perform genetic crosses (between 0.0 and 1.0)\n");
+		printf("\t\tmut_range:          variance for mutations (between 0.0 and 0.5)\n");
+		printf("\t\tmut_prob:           probability of mutating (between 0.0 and 1.0)\n");
+		printf("\t\tmin_weight:         minimum possible weight as a float number\n");
+		printf("\t\tmax_weight:         maximum possible weight as a float number\n");
+		printf("\n");
+	} else if (!strcmp(instruction, "-h")) {
+		printf("\tPrints in-depth help of an instruction or the list of instructions if no instruction is specified.\n");
+		printf("\t\tinstruction:        instruction to be helped with (-g, -b, -bq, -u, -p, -ia, -gu)\n");
+		printf("\n");
 	}
 
 	return;
@@ -33,62 +111,36 @@ void printArgumentError(char *instruction) {
 	return;
 }
 
-void printHelp() {
+void printHelp(char *instruction) {
+	printArgumentInfo(instruction);
+	printArgumentDetail(instruction);
+
+	return;
+}
+
+void printListFlags() {
 	printArgumentInfo("-g");
-	printf("\tPlays a Mancala game with the desired options:\n");
-	printf("\t\tplayer_turn:        0 -> first player starts the game\n");
-	printf("\t\t                    1 -> second player starts the game\n");
-	printf("\t\tdepth:              desired depth for searching, must be even\n");
-	printf("\t\tsee_flag:           1 -> prints the development of the game\n");
-	printf("\t\t                    0 -> only prints the result\n");
-	printf("\t\theuristic_player_1: name of the heuristic for player 1 (heuristicIARegular, heuristicIABuena or heuristicWeight)\n");
-	printf("\t\theuristic_player_2: name of the heuristic for player 2 (heuristicIARegular, heuristicIABuena or heuristicWeight)\n");
-	printf("\t\tweights_player_1:   fourteen float numbers, weights to apply heuristicWeight for player 1\n");
-	printf("\t\tweights_player_2:   fourteen float numbers, weights to apply heuristicWeight for player 2\n");
-	printf("\n");
 	printArgumentInfo("-b");
-	printf("\tGenerates a data base of random heuristics with the desired options:\n");
-	printf("\t\tfile_name:          name of the file in which to save the data base.\n");
-	printf("\t\tnumber_heuristics:  number of heuristics to save\n");
-	printf("\t\tmin_weight:         minimum possible weight as a float number\n");
-	printf("\t\tmax_weight:         maximum possible weight as a float number\n");
-	printf("\n");
+	printArgumentInfo("-bq");
 	printArgumentInfo("-u");
-	printf("\tUploads the data base in a file through with the desired options:\n");
-	printf("\t\tfile_name:          name of the file from which to load the data base (it must exist)\n");
-	printf("\t\ttype_update:        type of heuristic generation (random, genetic)\n");
-	printf("\t\titerations:         number of heuristics generated to upload the data base\n");
-	printf("\t\tmin_weight:         minimum possible weight as a float number\n");
-	printf("\t\tmax_weight:         maximum possible weight as a float number\n");
-	printf("\n");
 	printArgumentInfo("-p");
-	printf("\tPrints one specific heuristic (its 14 weights) from a data base with the desired options:\n");
-	printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
-	printf("\t\tposition:           index of the heuristic in the data base (if -1, prints the last one generated)\n");
-	printf("\n");
 	printArgumentInfo("-ia");
-	printf("\tGenerates the text of the .cl file required for Artificial Intelligence uploads:\n");
-	printf("\t\tfile_name:          name of the file from which to load the heuristic (it must exist)\n");
-	printf("\t\tgroup:              group of the team/pair (always two digits)\n");
-	printf("\t\tteam:               number of the team/pair (always two digits)\n");
-	printf("\t\tnumber:             number of the file (1, 2 or 3)\n");
-	printf("\t\tpassword:           two character string that identifies your group\n");
-	printf("\t\tday:                day in which it is going to be uploaded (always two digits)\n");
-	printf("\t\tmonth:              month in which it is going to be uploaded (always two digits)\n");
-	printf("\t\talias:              name of the bot (for example, \"Marvill-1.1.0\")\n");
-	printf("\n");
+	printArgumentInfo("-gu");
+	printArgumentInfo("-h");
 
 	return;
 }
 
 void printStart() {
 	printf("Welcome to the Marvill Mancala Project. To run the program, execute the command \"./main\" with one of the following flags:\n\n");
-	printHelp();
+	printListFlags();
+
+	return;
 }
 
 void printOptionError() {
 	printf("You have not selected a correct flag. Please run the program with one of the following flags:\n");
-	printHelp();
+	printListFlags();
 }
 
 void printCriticalError() {
@@ -286,6 +338,21 @@ int main(int argc, char **argv) {
 		}
 
 		printf("Database created successfully in %s.\n", argv[2]);
+	} else if (!strcmp(argv[1], "-bq")) {
+		short ret;
+
+		if (argc != 6) {
+			printArgumentError(argv[1]);
+			return ERR;
+		}
+
+		ret = buildQualityRandomWHDB(argv[2], atoi(argv[3]), atof(argv[4]), atof(argv[5]));
+		if (ret == ERR) {
+			printArgumentError(argv[1]);
+			return ERR;
+		}
+
+		printf("Database created successfully in %s.\n", argv[2]);
 	} else if (!strcmp(argv[1], "-u")) {
 		short ret;
 
@@ -410,6 +477,39 @@ int main(int argc, char **argv) {
 		freeWHDB(whdb);
 
 		printf("File %s.cl generated successfully!\n", file_name);
+	} else if (!strcmp(argv[1], "-gu")) {
+		int iterations;
+		float min_win_rate, cross_rate, mut_range, mut_prob, min_h, max_h;
+		short ret;
+
+		if (argc != 10) {
+			printArgumentError(argv[1]);
+			return ERR;
+		}
+
+		iterations = atoi(argv[3]);
+		min_win_rate = atof(argv[4]);
+		cross_rate = atof(argv[5]);
+		mut_range = atof(argv[6]);
+		mut_prob = atof(argv[7]);
+		min_h = atof(argv[8]);
+		max_h = atof(argv[9]);
+
+		ret = geneticUpdateWHDB(argv[2], iterations, min_win_rate, cross_rate, mut_range, mut_prob, min_h, max_h);
+		if (ret == ERR) {
+			return ERR;
+		}
+
+		printf("Genetic update completed succesfully!\n");
+	} else if (!strcmp(argv[1], "-h")) {
+		if (argc != 2 && argc != 3) {
+			printArgumentError(argv[1]);
+			return ERR;
+		} else if (argc == 2) {
+			printListFlags();
+		} else {
+			printHelp(argv[2]);
+		}
 	} else {
 		printOptionError();
 	}
@@ -467,7 +567,7 @@ short testWHAgainstWH (short player_turn, float *heur_values1, float *heur_value
 	heuristic h = heuristicWeight;
 	short ret;
 
-	winner = playMancala(0, h, h, 2, 2, heur_values1, heur_values2, 0);
+	winner = playMancala(player_turn, h, h, 2, 2, heur_values1, heur_values2, 0);
 	if (winner == NULL) {
 		return ERR;
 	}
@@ -504,19 +604,23 @@ float testWHAgainstWHDB (float *heur_values, struct whdb *whdb) {
 	return win_rate;
 }
 
-// Assumes that a WHDB exists in 'filename' and tests each of the heuristics with
-// the rest. It generates (n+4)^2 games where n is the number of heuristics, so be
-// careful with the size of the database if you don't want to murder your computer.
+// Tests each of the heuristics in the database 'whdb' with the rest. It generates
+// 2*n^2 games where n is the number of heuristics, so be careful with the size of
+// the database if you don't want to murder your computer.
+// It also assumes that every heuristic fulfills the requirements, for example it
+// doesn't check if those heuristics win against the Regular or the Good heuristics.
 // Prints the weighted heuristic as a vector of size 14 (pointer).
-short testSimpleWHDB (char *filename) {
+short testTournamentWHDB (struct whdb *whdb, float *weights, float *win_rate) {
 	int i, cur_heur;
-	float *heur_max, *heur_aux, heur_ret[14];
-	float win_rate = -1.0, win_rate_aux;
-	struct whdb *whdb;
-	heuristic h = heuristicWeight;
+	float *heur_max, *heur_aux;
+	float win_rate_max = -1.0, win_rate_aux;
 
-	whdb = loadWHDB(filename);
 	if (whdb == NULL) {
+		return ERR;
+	}
+
+	weights = (float*) malloc(14*sizeof(float));
+	if (weights == NULL) {
 		return ERR;
 	}
 
@@ -526,28 +630,19 @@ short testSimpleWHDB (char *filename) {
 
 		heur_aux = getWHDB(whdb, i);
 
-		if (!testAgainstRegular(h, heur_aux)) {
-			continue;
-		}
-
 		win_rate_aux = testWHAgainstWHDB(heur_aux, whdb);
-		if (win_rate_aux > win_rate) {
-			win_rate = win_rate_aux;
+		if (win_rate_aux > win_rate_max) {
+			win_rate_max = win_rate_aux;
 			heur_max = heur_aux;
 		}
 	}
 
+	*win_rate = win_rate_max;
 	for (i=0; i<14; i++) {
-		heur_ret[i] = heur_max[i];
+		weights[i] = heur_max[i];
 	}
 
 	freeWHDB(whdb);
-
-	printf("Champion: [ ");
-	for (i=0; i<14; i++) {
-		printf("%f ", heur_ret[i]);
-	}
-	printf("]\nWin rate of champion: %f\n", win_rate);
 
 	return OK;
 }
@@ -582,6 +677,41 @@ short buildRandomWHDB (char *filename, int num_heur, float min_h, float max_h) {
 	return saveWHDB(whdb, filename);
 }
 
+short buildQualityRandomWHDB (char *filename, int num_heur, float min_h, float max_h) {
+	struct whdb *whdb;
+	float *heur_values;
+	generateWH gh = generateRandomWH;
+	heuristic h = heuristicWeight;
+
+	whdb = createWHDB(num_heur);
+	if (whdb == NULL) {
+		return ERR;
+	}
+
+	while (getNumWHDB(whdb) < num_heur) {
+		heur_values = gh(NULL, min_h, max_h);
+		if (heur_values == NULL) {
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		if (!testAgainstRegular(h, heur_values) || !testAgainstGood(h, heur_values)) {
+			free(heur_values);
+			continue;
+		}
+
+		if (addWHDB(whdb, heur_values) == ERR) {
+			free(heur_values);
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		free(heur_values);
+	}
+
+	return saveWHDB(whdb, filename);
+}
+
 // Assumes we have enabled testing on whdb
 short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights, float min_h, float max_h) {
 	float *test_weights, win_rate;
@@ -599,7 +729,7 @@ short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights
 	if (testAgainstRegular(h, test_weights) && testAgainstGood(h, test_weights)) {
 		win_rate = testWHAgainstWHDB (test_weights, whdb);
 		if (win_rate > getWinRateWHDB(whdb)) {
-			printf("Éxito! Heurística con %f guardada en posicion %d.\n", win_rate, whdb->win_index);
+			printf("Success! Heuristic with win rate %f saved with index %d.\n", win_rate, whdb->win_index);
 			updateAfterTestWHDB(whdb, test_weights);
 		}
 	}
@@ -613,7 +743,7 @@ short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights
 // the function 'buildRandomWHDB'
 short updateWHDB (char *filename, char *generateWHChoice, int iterations, float min_h, float max_h) {
 	struct whdb *whdb;
-	int i;
+	int i, pos;
 	short ret;
 	generateWH gh;
 	float *init_weights;
@@ -627,29 +757,82 @@ short updateWHDB (char *filename, char *generateWHChoice, int iterations, float 
 		return ERR;
 	}
 
-	if (!strcmp(generateWHChoice, "random")) {
-		gh = generateRandomWH;
-		init_weights = NULL;
-	} else if (!strcmp(generateWHChoice, "genetic")) {
-		gh = generateSimilarWH;
-		i = rand() % (int)getNumWHDB(whdb);
-		init_weights = getWHDB(whdb, i);
-	} else {
-		return ERR;
-	}
-
 	if (!isEnabledTestingWHDB(whdb)) {
 		enableTestingWHDB(whdb, INIT_WR);
 	}
 
-	for (i=0; i<iterations; i++) {
-		ret = iterationUpdateWHDB(whdb, gh, init_weights, min_h, max_h);
-		if (ret == ERR) {
-			break;
+	if (!strcmp(generateWHChoice, "random")) {
+		gh = generateRandomWH;
+		init_weights = NULL;
+
+		for (i=0; i<iterations; i++) {
+			ret = iterationUpdateWHDB(whdb, gh, init_weights, min_h, max_h);
+			if (ret == ERR) {
+				break;
+			}
 		}
+	} else if (!strcmp(generateWHChoice, "simple_mutation")) {
+		gh = generateSimpleMutationWH;
+
+		for (i=0; i<iterations; i++) {
+			pos = rand() % (int)getNumWHDB(whdb);
+			init_weights = getWHDB(whdb, pos);
+			ret = iterationUpdateWHDB(whdb, gh, init_weights, min_h, max_h);
+			if (ret == ERR) {
+				break;
+			}
+		}
+	} else {
+		return ERR;
 	}
 
 	ret = saveWHDB(whdb, filename);
+	if (ret == ERR) {
+		return ERR;
+	}
+
+	return OK;
+}
+
+short geneticUpdateWHDB (char *file, int iterations, float min_win_rate, float cross_rate, float mut_range, float mut_prob, float min_h, float max_h) {
+	struct whdb *whdb_gen, *whdb_origin;
+	float *weights = NULL, *win_rate = NULL;
+	int i;
+	short ret;
+
+	if (file == NULL) {
+		return ERR;
+	}
+
+	whdb_origin = loadWHDB(file);
+	if (whdb_origin == NULL) {
+		return ERR;
+	}
+
+	for (i=0; i<iterations; i++) {
+		whdb_gen = createNewGeneration(whdb_origin, cross_rate, mut_range, mut_prob, min_h, max_h);
+		if (whdb_gen == NULL) {
+			freeWHDB(whdb_origin);
+			return ERR;
+		}
+
+		ret = testTournamentWHDB(whdb_gen, weights, win_rate);
+		if (ret == ERR) {
+			freeWHDB(whdb_gen);
+			freeWHDB(whdb_origin);
+			return ERR;
+		}
+
+		if (*win_rate > min_win_rate) {
+			printf("Success! Heuristic with win rate %f saved with index %d.\n", *win_rate, whdb_origin->win_index);
+			updateAfterTestWHDB(whdb_origin, weights);
+		}
+
+		freeWHDB(whdb_gen);
+		free(weights);
+	}
+
+	ret = saveWHDB(whdb_origin, file);
 	if (ret == ERR) {
 		return ERR;
 	}

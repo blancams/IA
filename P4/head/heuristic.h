@@ -14,6 +14,6 @@ float heuristicIABuena(struct mancala_state ms, float *empty);
 float heuristicWeight(struct mancala_state ms, float *weights);
 
 float* generateRandomWH(float *empty, float min, float max);
-float* generateSimilarWH(float *init_weights, float min, float max);
+float* generateSimpleMutationWH(float *init_weights, float min, float max);
 
 #endif

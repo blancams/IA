@@ -20,10 +20,11 @@ short testWHAgainstWH (short player_turn, float *heur_values1, float *heur_value
 float testWHAgainstWHDB (float *heur_values, struct whdb *whdb);
 
 /* Tests every heuristic in a WHDB against each other and prints the winner. */
-short testSimpleWHDB (char *filename);
+short testTournamentWHDB (struct whdb *whdb, float *weights, float *win_rate);
 
 short buildRandomWHDB (char *filename, int num_heur, float min_h, float max_h);
+short buildQualityRandomWHDB (char *filename, int num_heur, float min_h, float max_h);
 short iterationUpdateWHDB (struct whdb *whdb, generateWH gh, float *init_weights, float min_h, float max_h);
 short updateWHDB (char *filename, char *generateWHChoice, int iterations, float min_h, float max_h);
-
+short geneticUpdateWHDB (char *file, int iterations, float min_win_rate, float cross_rate, float mut_range, float mut_prob, float min_h, float max_h);
 #endif
