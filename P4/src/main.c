@@ -17,7 +17,7 @@ void printArgumentInfo(char *instruction) {
 	} else if (!strcmp(instruction, "-b")) {
 		printf("-b <file_name> <number_heuristics> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-bq")) {
-		printf("-b <file_name> <number_heuristics> <min_weight> <max_weight>\n");
+		printf("-bq <file_name> <number_heuristics> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-u")) {
 		printf("-u <file_name> <type_update> <num_iterations> <min_weight> <max_weight>\n");
 	} else if (!strcmp(instruction, "-p")) {
@@ -619,14 +619,9 @@ short testTournamentWHDB (struct whdb *whdb, float *weights, float *win_rate) {
 		return ERR;
 	}
 
-	weights = (float*) malloc(14*sizeof(float));
-	if (weights == NULL) {
-		return ERR;
-	}
-
 	cur_heur = getNumWHDB(whdb);
 	for (i=0; i<cur_heur; i++) {
-		//if (i%500==0) printf("%d: little control.\n", i);
+		//if (i%50==49) printf("%d: little control.\n", i);
 
 		heur_aux = getWHDB(whdb, i);
 
@@ -641,8 +636,6 @@ short testTournamentWHDB (struct whdb *whdb, float *weights, float *win_rate) {
 	for (i=0; i<14; i++) {
 		weights[i] = heur_max[i];
 	}
-
-	freeWHDB(whdb);
 
 	return OK;
 }
@@ -796,7 +789,7 @@ short updateWHDB (char *filename, char *generateWHChoice, int iterations, float 
 
 short geneticUpdateWHDB (char *file, int iterations, float min_win_rate, float cross_rate, float mut_range, float mut_prob, float min_h, float max_h) {
 	struct whdb *whdb_gen, *whdb_origin;
-	float *weights = NULL, *win_rate = NULL;
+	float *weights, win_rate;
 	int i;
 	short ret;
 
@@ -804,34 +797,46 @@ short geneticUpdateWHDB (char *file, int iterations, float min_win_rate, float c
 		return ERR;
 	}
 
+	weights = (float*) malloc(14*sizeof(float));
+	if (weights == NULL) {
+		return ERR;
+	}
+
 	whdb_origin = loadWHDB(file);
 	if (whdb_origin == NULL) {
+		free(weights);
 		return ERR;
+	}
+
+	if (!isEnabledTestingWHDB(whdb_origin)) {
+		enableTestingWHDB(whdb_origin, INIT_WR);
 	}
 
 	for (i=0; i<iterations; i++) {
 		whdb_gen = createNewGeneration(whdb_origin, cross_rate, mut_range, mut_prob, min_h, max_h);
 		if (whdb_gen == NULL) {
+			free(weights);
 			freeWHDB(whdb_origin);
 			return ERR;
 		}
 
-		ret = testTournamentWHDB(whdb_gen, weights, win_rate);
+		ret = testTournamentWHDB(whdb_gen, weights, &win_rate);
 		if (ret == ERR) {
+			free(weights);
 			freeWHDB(whdb_gen);
 			freeWHDB(whdb_origin);
 			return ERR;
 		}
 
-		if (*win_rate > min_win_rate) {
-			printf("Success! Heuristic with win rate %f saved with index %d.\n", *win_rate, whdb_origin->win_index);
+		if (win_rate > min_win_rate) {
+			printf("Success! Heuristic with win rate %f saved with index %d.\n", win_rate, whdb_origin->win_index);
 			updateAfterTestWHDB(whdb_origin, weights);
 		}
 
 		freeWHDB(whdb_gen);
-		free(weights);
 	}
 
+	free(weights);
 	ret = saveWHDB(whdb_origin, file);
 	if (ret == ERR) {
 		return ERR;

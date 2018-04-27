@@ -116,7 +116,6 @@ struct whdb* createNewGeneration(struct whdb *whdb1, float cross_rate, float mut
     num_heur = getNumWHDB(whdb1);
     whdb2 = createWHDB(num_heur);
     if (whdb2 == NULL) {
-        freeWHDB(whdb1);
         return NULL;
     }
 
@@ -137,13 +136,10 @@ struct whdb* createNewGeneration(struct whdb *whdb1, float cross_rate, float mut
     }
 
     if (crossWHDB(whdb1, whdb2, top_index, bottom_index - 1, num_changed) == ERR) {
-        freeWHDB(whdb1);
         freeWHDB(whdb2);
         return NULL;
     }
 
     applyMutation(whdb2, mut_range, mut_prob, min_h, max_h);
-
-    freeWHDB(whdb1);
     return whdb2;
 }
