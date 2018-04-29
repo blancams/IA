@@ -255,6 +255,7 @@ short geneticUpdateWHDB (char *fn_gen, char *fn_test, short max_gen, float wrl, 
 
     while (generation < max_gen && max_win_rate < wrl) {
         generation++;
+		max_win_rate = 0.0;
         printf("Creating generation %hi...\n", generation);
 
         whdb_gen = newGeneration(whdb_gen, win_rates, cr, mp, mm, mx, min_h, max_h);
@@ -267,7 +268,7 @@ short geneticUpdateWHDB (char *fn_gen, char *fn_test, short max_gen, float wrl, 
         }
     }
 
-    printf("After applying the genetic algorithm, the best heuristic lives in position %d.\n", max_ind);
+    printf("After applying the genetic algorithm, the best heuristic (%f) lives in position %d.\n", max_win_rate, max_ind);
     freeWHDB(whdb_test);
     free(win_rates);
 

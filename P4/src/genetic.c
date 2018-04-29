@@ -39,7 +39,7 @@ struct whdb* newGeneration(struct whdb *old_whdb, float *win_rates, float cross_
     struct whdb *new_whdb;
     short j;
     int i, cross_flag, num_heur, select_count, max_selected;
-    float sum_wr, select_prob, rnd, *mask, *heur_child1, *heur_child2;
+    float select_prob, rnd, *mask, *heur_child1, *heur_child2;
 
     if (old_whdb == NULL || win_rates == NULL) {
         return NULL;
@@ -73,10 +73,6 @@ struct whdb* newGeneration(struct whdb *old_whdb, float *win_rates, float cross_
         return NULL;
     }
 
-    for (i=0, sum_wr=0.0; i<num_heur; i++) {
-        sum_wr += win_rates[i];
-    }
-
     // This is a suboptimal way of implementing crossing, because it doesn't make
     // sure that (1-cr)*p heuristics are selected, it crosses consecutive heuristics
     // and has to do an ugly check in the end. The correct way would iterate until
@@ -84,7 +80,7 @@ struct whdb* newGeneration(struct whdb *old_whdb, float *win_rates, float cross_
     // doesn't break the program and can be implemented at 02:00AM.
     max_selected = (int)((1-cross_rate)*num_heur+0.5);
     for (i=0, cross_flag=-1, select_count=0; i<num_heur; i++) {
-        select_prob = win_rates[i] / sum_wr;
+        select_prob = win_rates[i]*win_rates[i] / 100.0;
         rnd = ((float)rand()/(float)(RAND_MAX));
         if (rnd < select_prob && select_count < max_selected) {
             addWHDB(new_whdb, getWHDB(old_whdb, i));
