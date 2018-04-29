@@ -24,6 +24,9 @@ struct whdb* loadWHDB(char *filename);
 short saveWHDB(struct whdb *whdb, char *filename);
 float getWinRateWHDB(struct whdb *whdb);
 
+short buildRandomWHDB (char *filename, int num_heur, float min_h, float max_h);
+short buildQualityRandomWHDB (char *filename, int num_heur, float min_h, float max_h);
+
 short isEnabledTestingWHDB(struct whdb *whdb);
 void enableTestingWHDB (struct whdb *whdb, float min_win_rate);
 void disableTestingWHDB (struct whdb *whdb);

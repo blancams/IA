@@ -3,6 +3,8 @@
 
 #include "globals.h"
 #include "whdb.h"
+#include "heuristic.h"
+#include "tests.h"
 
 /* WHDB management */
 
@@ -247,4 +249,72 @@ short updateAfterTestWHDB (struct whdb *whdb, float *new_weights) {
     }
 
     return OK;
+}
+
+
+/* WHDB creation */
+
+short buildRandomWHDB (char *filename, int num_heur, float min_h, float max_h) {
+	struct whdb *whdb;
+	float *heur_values;
+	int i;
+	generateWH gh = generateRandomWH;
+
+	whdb = createWHDB(num_heur);
+	if (whdb == NULL) {
+		return ERR;
+	}
+
+	for (i=0; i<num_heur; i++) {
+		heur_values = gh(NULL, min_h, max_h);
+		if (heur_values == NULL) {
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		if (addWHDB(whdb, heur_values) == ERR) {
+			free(heur_values);
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		free(heur_values);
+	}
+
+	return saveWHDB(whdb, filename);
+}
+
+short buildQualityRandomWHDB (char *filename, int num_heur, float min_h, float max_h) {
+	struct whdb *whdb;
+	float *heur_values;
+	generateWH gh = generateRandomWH;
+	heuristic h = heuristicWeight;
+
+	whdb = createWHDB(num_heur);
+	if (whdb == NULL) {
+		return ERR;
+	}
+
+	while (getNumWHDB(whdb) < num_heur) {
+		heur_values = gh(NULL, min_h, max_h);
+		if (heur_values == NULL) {
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		if (!testAgainstRegular(h, heur_values) || !testAgainstGood(h, heur_values)) {
+			free(heur_values);
+			continue;
+		}
+
+		if (addWHDB(whdb, heur_values) == ERR) {
+			free(heur_values);
+			freeWHDB(whdb);
+			return ERR;
+		}
+
+		free(heur_values);
+	}
+
+	return saveWHDB(whdb, filename);
 }

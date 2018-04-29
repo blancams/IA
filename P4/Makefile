@@ -8,6 +8,7 @@ MANC = mancala
 HEUR = heuristic
 WHDB = whdb
 GENC = genetic
+TEST = tests
 
 CC = gcc
 FLAGS = -g -Wall -std=c99 -I$(HEADDIR)
@@ -19,7 +20,7 @@ all: before $(MAIN)
 before:
 	@[ -d $(BUILDDIR) ] || mkdir $(BUILDDIR)
 
-$(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUILDDIR)/$(HEUR).o $(BUILDDIR)/$(WHDB).o $(BUILDDIR)/$(GENC).o
+$(MAIN): $(BUILDDIR)/$(MAIN).o $(BUILDDIR)/$(HEXT).o $(BUILDDIR)/$(MANC).o $(BUILDDIR)/$(HEUR).o $(BUILDDIR)/$(WHDB).o $(BUILDDIR)/$(GENC).o $(BUILDDIR)/$(TEST).o
 	@echo Linking $@: $^
 	$(CC) -o $@ $^ $(FLAGS)
 
