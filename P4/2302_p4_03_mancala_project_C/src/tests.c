@@ -72,7 +72,8 @@ short testWHAgainstWH (short player_turn, float *heur_values1, float *heur_value
 // WHDB = weighted heuristics (generated through a 14-size vector of weights and the
 // function heuristicWeight) data base. Returns win rate.
 float testWHAgainstWHDB (float *heur_values, struct whdb *whdb) {
-	short i, wins, ret;
+	int i, wins;
+	short ret;
 	float win_rate;
 
 	if (whdb->cur_heur == 0) {

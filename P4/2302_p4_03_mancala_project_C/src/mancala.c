@@ -6,6 +6,15 @@
 #include "hextree.h"
 #include "heuristic.h"
 
+/************ IMPORTANT COMMENT ************
+In order to replicate the original implementation in LISP, some weird things
+have been added, specially the 'kalaha_flag', used to repeat someone's turn
+when they have finished their movement in their own kalaha (makes this work
+like the command 'play NIL' from LISP). There are more accurate and correct
+ways of implementing the game but this is the one that is the same as the
+original one.
+********************************************/
+
 struct mancala_state* createMancalaGame(short *player_1, short *player_2, short player_turn, struct strategy *str1, struct strategy *str2) {
 	short i;
 	struct mancala_state *ms;

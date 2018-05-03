@@ -82,6 +82,8 @@ struct whdb* newGeneration(struct whdb *old_whdb, float *win_rates, float cross_
     for (i=0, cross_flag=-1, select_count=0; i<num_heur; i++) {
         select_prob = win_rates[i]*win_rates[i] / 100.0;
         rnd = ((float)rand()/(float)(RAND_MAX));
+        // Alternative to always select good heuristics:
+        // if ((select_prob > 0.70) || (rnd < select_prob && select_count < max_selected)) {
         if (rnd < select_prob && select_count < max_selected) {
             addWHDB(new_whdb, getWHDB(old_whdb, i));
             select_count++;
@@ -107,6 +109,8 @@ struct whdb* newGeneration(struct whdb *old_whdb, float *win_rates, float cross_
     // Mutation taking action.
     for (i=0; i<num_heur; i++) {
         rnd = ((float)rand()/(float)(RAND_MAX));
+        // Alternative to avoid mutating good heuristics:
+        // if (win_rates[i] < 75.0 && rnd < mut_rate) {
         if (rnd < mut_rate) {
             mutateHeuristic(getWHDB(new_whdb, i), mut_min, mut_max, min_h, max_h);
         }
